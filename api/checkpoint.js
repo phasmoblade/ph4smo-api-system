@@ -63,7 +63,7 @@ export default async function handler(req, res) {
             const baseUrl = `${protocol}://${host}`;
             
             // Create checkpoint token for verification later
-            const checkpointToken = await createCheckpointToken(1, type, ip);
+            const checkpointToken = await createCheckpointToken(1, type, ip, {});
 
             // Build destination URL with {TOKEN} placeholder
             const destinationUrl = `${baseUrl}/api/checkpoint?type=${type}&token={TOKEN}&ctoken=${checkpointToken}`;
