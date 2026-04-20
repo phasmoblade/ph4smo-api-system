@@ -153,14 +153,19 @@
 
         <div class="options">
             <a href="/api/checkpoint?type=12h" class="option-btn">
+                <div class="option-icon">⚡</div>
+                <div class="option-title">12 Hour Key</div>
+                <div class="option-desc">1 checkpoint</div>
+            </a>
+            <a href="/api/checkpoint?type=24h" class="option-btn">
                 <div class="option-icon">🔑</div>
-                <div class="option-title">Get Key</div>
-                <div class="option-desc">Complete tasks to get your key</div>
+                <div class="option-title">24 Hour Key</div>
+                <div class="option-desc">2 checkpoints</div>
             </a>
         </div>
         
         <div class="back-link">
-            <a href="/">← Back to ph4smo.club</a>
+            <a href="https://ph4smo.vercel.app">← Back to ph4smo.club</a>
         </div>
     </div>
 
@@ -189,12 +194,12 @@
         if (error) {
             const box = document.getElementById('errorBox');
             const msgs = {
-                token_expired: '⚠️ Your session expired (10 min limit). Please start over.',
-                invalid_step:  '⚠️ Invalid session. Please start over.',
-                missing_token: '⚠️ Missing verification token. Please start over.',
-                not_completed: '⚠️ Tasks not completed. Please complete all tasks.',
+                token_expired: 'Your session expired (10 min limit). Please start over.',
+                invalid_step:  'Invalid session. Please start over.',
+                missing_token: 'Missing verification token. Please start over.',
+                not_completed: 'Tasks not completed. Please complete all tasks.',
             };
-            box.textContent = msgs[error] || '⚠️ Something went wrong. Please try again.';
+            box.textContent = msgs[error] || 'Something went wrong. Please try again.';
             box.style.display = 'block';
         }
     </script>

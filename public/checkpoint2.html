@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkpoint 2/2 — ph4smo.club</title>
+    <script>
+        // Get type from URL
+        const params = new URLSearchParams(window.location.search);
+        const type = params.get('type') || '24h';
+        // Redirect to checkpoint API
+        window.location.href = `/api/checkpoint?type=${type}&step=2`;
+    </script>
+</head>
+<body style="background: #000; color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh;">
+    <p>Loading checkpoint 2/2...</p>
+</body>
+</html>
