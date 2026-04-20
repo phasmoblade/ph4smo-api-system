@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ph4smo API — Key System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .logo { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.05em; margin-bottom: 8px; }
+        .logo span { color: #a855f7; }
+        .tagline { color: #666; font-size: 0.9rem; margin-bottom: 60px; letter-spacing: 0.1em; text-transform: uppercase; }
+        .cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 32px;
+            width: 260px;
+            text-align: center;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .card:hover { border-color: #a855f7; transform: translateY(-4px); }
+        .card-icon { font-size: 2.5rem; margin-bottom: 16px; }
+        .card-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+        .card-desc { color: #666; font-size: 0.85rem; line-height: 1.5; margin-bottom: 24px; }
+        .card-steps { color: #888; font-size: 0.8rem; margin-bottom: 20px; }
+        .card-steps span { color: #a855f7; font-weight: 600; }
+        .btn {
+            display: block;
+            background: #a855f7;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #9333ea; }
+        .btn.secondary { background: #222; color: #aaa; }
+        .btn.secondary:hover { background: #333; color: #fff; }
+        .footer { margin-top: 60px; color: #444; font-size: 0.8rem; text-align: center; }
+        .footer a { color: #666; text-decoration: none; }
+        .footer a:hover { color: #a855f7; }
+    </style>
+</head>
+<body>
+    <div class="logo">ph4smo<span>api</span></div>
+    <p class="tagline">key system · ph4smo.club</p>
+
+    <div class="cards">
+        <div class="card">
+            <div class="card-icon">⚡</div>
+            <div class="card-title">12 Hour Key</div>
+            <div class="card-desc">Get a key valid for 12 hours. Complete 2 checkpoints.</div>
+            <div class="card-steps"><span>2</span> checkpoints required</div>
+            <a href="/api/checkpoint?step=1&type=12h" class="btn">Get Key →</a>
+        </div>
+        <div class="card">
+            <div class="card-icon">🔑</div>
+            <div class="card-title">24 Hour Key</div>
+            <div class="card-desc">Get a key valid for 24 hours. Complete 3 checkpoints.</div>
+            <div class="card-steps"><span>3</span> checkpoints required</div>
+            <a href="/api/checkpoint?step=1&type=24h" class="btn">Get Key →</a>
+        </div>
+        <div class="card">
+            <div class="card-icon">❓</div>
+            <div class="card-title">Already have a key?</div>
+            <div class="card-desc">Use your key in the script executor. Keys are bound to your device.</div>
+            <div class="card-steps">Paste key in executor</div>
+            <a href="https://ph4smo.vercel.app" class="btn secondary" target="_blank">Visit ph4smo.club</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Keys are bound to your device (HWID). Sharing keys will not work.</p>
+        <br>
+        <a href="https://ph4smo.vercel.app" target="_blank">ph4smo.club</a>
+    </div>
+</body>
+</html>

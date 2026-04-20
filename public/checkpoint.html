@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key Received — ph4smo API</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .logo { font-size: 2rem; font-weight: 800; letter-spacing: -0.05em; margin-bottom: 40px; }
+        .logo span { color: #a855f7; }
+        .card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+        }
+        .success-icon { font-size: 3rem; margin-bottom: 16px; }
+        .card-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
+        .card-desc { color: #666; font-size: 0.9rem; margin-bottom: 28px; line-height: 1.5; }
+        .key-box {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 16px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            letter-spacing: 0.1em;
+            color: #a855f7;
+            margin-bottom: 16px;
+            word-break: break-all;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .key-box:hover { border-color: #a855f7; }
+        .copy-hint { color: #555; font-size: 0.8rem; margin-bottom: 28px; }
+        .copy-hint.copied { color: #22c55e; }
+        .info-box {
+            background: #0f0f0f;
+            border: 1px solid #1a1a1a;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: left;
+            margin-bottom: 24px;
+        }
+        .info-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.85rem; }
+        .info-label { color: #666; }
+        .info-value { color: #ccc; font-weight: 600; }
+        .info-value.green { color: #22c55e; }
+        .btn {
+            display: block;
+            background: #a855f7;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+            width: 100%;
+        }
+        .btn:hover { background: #9333ea; }
+        .warning { color: #f59e0b; font-size: 0.8rem; margin-top: 16px; }
+        .error-card { border-color: #ef4444; }
+        .error-icon { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="logo">ph4smo<span>api</span></div>
+
+    <div class="card" id="mainCard">
+        <div class="success-icon" id="icon">🎉</div>
+        <div class="card-title" id="title">Key Generated!</div>
+        <div class="card-desc" id="desc">Your key is ready. Click to copy it.</div>
+
+        <div class="key-box" id="keyBox" onclick="copyKey()">Loading...</div>
+        <div class="copy-hint" id="copyHint">Click key to copy</div>
+
+        <div class="info-box" id="infoBox">
+            <div class="info-row">
+                <span class="info-label">Type</span>
+                <span class="info-value" id="keyType">—</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Valid for</span>
+                <span class="info-value green" id="keyDuration">—</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">HWID bound</span>
+                <span class="info-value">On first use</span>
+            </div>
+        </div>
+
+        <a href="https://ph4smo.vercel.app" class="btn" target="_blank">Go to ph4smo.club →</a>
+        <p class="warning" id="warning">⚠️ Save your key! It won't be shown again.</p>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const success = params.get('success');
+        const key     = params.get('key');
+        const type    = params.get('type') || '12h';
+        const error   = params.get('error');
+
+        const keyBox    = document.getElementById('keyBox');
+        const copyHint  = document.getElementById('copyHint');
+        const icon      = document.getElementById('icon');
+        const title     = document.getElementById('title');
+        const desc      = document.getElementById('desc');
+        const keyType   = document.getElementById('keyType');
+        const keyDur    = document.getElementById('keyDuration');
+        const warning   = document.getElementById('warning');
+        const card      = document.getElementById('mainCard');
+        const infoBox   = document.getElementById('infoBox');
+
+        if (error) {
+            card.classList.add('error-card');
+            icon.textContent = '❌';
+            icon.classList.add('error-icon');
+            title.textContent = 'Something went wrong';
+            infoBox.style.display = 'none';
+            warning.style.display = 'none';
+            keyBox.style.display = 'none';
+            copyHint.style.display = 'none';
+
+            const msgs = {
+                token_expired: 'Your checkpoint token expired (10 min limit). Please start over.',
+                invalid_step:  'Invalid checkpoint step. Please start over.',
+            };
+            desc.textContent = msgs[error] || 'An unknown error occurred. Please try again.';
+        } else if (success && key) {
+            keyBox.textContent = key;
+            keyType.textContent = type === '24h' ? '24 Hour' : '12 Hour';
+            keyDur.textContent  = type === '24h' ? '24 hours' : '12 hours';
+        } else {
+            keyBox.textContent = 'No key found';
+            warning.style.display = 'none';
+        }
+
+        function copyKey() {
+            if (!key) return;
+            navigator.clipboard.writeText(key).then(() => {
+                copyHint.textContent = '✓ Copied to clipboard!';
+                copyHint.classList.add('copied');
+                setTimeout(() => {
+                    copyHint.textContent = 'Click key to copy';
+                    copyHint.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

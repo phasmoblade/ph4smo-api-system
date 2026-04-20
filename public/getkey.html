@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Key — ph4smo API</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .logo { font-size: 2rem; font-weight: 800; letter-spacing: -0.05em; margin-bottom: 40px; }
+        .logo span { color: #a855f7; }
+        .card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        .card-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+        .card-desc { color: #666; font-size: 0.9rem; margin-bottom: 32px; line-height: 1.5; }
+        .steps { margin-bottom: 32px; }
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .step-num {
+            width: 32px;
+            height: 32px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #a855f7;
+            flex-shrink: 0;
+        }
+        .step-content { padding-top: 4px; }
+        .step-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; }
+        .step-desc { color: #666; font-size: 0.85rem; }
+        .options { display: flex; gap: 12px; flex-wrap: wrap; }
+        .option-btn {
+            flex: 1;
+            min-width: 180px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: #fff;
+            display: block;
+        }
+        .option-btn:hover { border-color: #a855f7; background: #1f1f1f; }
+        .option-icon { font-size: 2rem; margin-bottom: 8px; }
+        .option-title { font-weight: 700; margin-bottom: 4px; }
+        .option-steps { color: #666; font-size: 0.8rem; }
+        .option-steps span { color: #a855f7; }
+        .error-box {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-bottom: 24px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">ph4smo<span>api</span></div>
+
+    <div class="card">
+        <div class="card-title">🔑 Get Your Key</div>
+        <div class="card-desc">Complete the checkpoints to receive your key. Keys are bound to your device.</div>
+
+        <div class="error-box" id="errorBox"></div>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <div class="step-title">Choose key duration</div>
+                    <div class="step-desc">Select 12h or 24h key below</div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <div class="step-title">Complete work.ink tasks</div>
+                    <div class="step-desc">Complete simple tasks to get your key</div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <div class="step-title">Copy your key</div>
+                    <div class="step-desc">Paste it in your executor when prompted</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="options">
+            <a href="/api/checkpoint?type=12h" class="option-btn">
+                <div class="option-icon">⚡</div>
+                <div class="option-title">12 Hour Key</div>
+                <div class="option-steps">Quick tasks</div>
+            </a>
+            <a href="/api/checkpoint?type=24h" class="option-btn">
+                <div class="option-icon">🔑</div>
+                <div class="option-title">24 Hour Key</div>
+                <div class="option-steps">Quick tasks</div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const error  = params.get('error');
+        const type   = params.get('type') || '12h';
+        if (error) {
+            const box = document.getElementById('errorBox');
+            const msgs = {
+                token_expired: '⚠️ Your session expired (10 min limit). Please start over.',
+                invalid_step:  '⚠️ Invalid session. Please start over.',
+                missing_token: '⚠️ Missing verification token. Please start over.',
+                not_completed: '⚠️ Tasks not completed. Please complete all tasks.',
+            };
+            box.textContent = msgs[error] || '⚠️ Something went wrong. Please try again.';
+            box.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
