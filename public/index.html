@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ph4smo API — Key System</title>
+    <title>ph4smo.club — Key System</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #0a0a0a;
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
             color: #fff;
             min-height: 100vh;
             display: flex;
@@ -16,30 +16,80 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            cursor: none;
         }
-        .logo { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.05em; margin-bottom: 8px; }
-        .logo span { color: #a855f7; }
-        .tagline { color: #666; font-size: 0.9rem; margin-bottom: 60px; letter-spacing: 0.1em; text-transform: uppercase; }
-        .cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        
+        * { cursor: none !important; }
+        
+        @media (max-width: 768px) {
+            body, * { cursor: auto !important; }
+            .cursor, .cursor-dot { display: none; }
+        }
+        
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,.4);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.15s ease;
+            transform: translate(-50%, -50%);
+        }
+        
+        .cursor-dot {
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+        
+        .logo { 
+            font-size: 2.5rem; 
+            font-weight: 700; 
+            letter-spacing: -0.05em; 
+            margin-bottom: 8px; 
+        }
+        .tagline { 
+            color: #666; 
+            font-size: 0.9rem; 
+            margin-bottom: 60px; 
+            letter-spacing: 0.1em; 
+            text-transform: uppercase; 
+        }
+        .cards { 
+            display: flex; 
+            gap: 20px; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+        }
         .card {
-            background: #111;
-            border: 1px solid #222;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
             border-radius: 16px;
             padding: 32px;
             width: 260px;
             text-align: center;
-            transition: border-color 0.2s, transform 0.2s;
+            transition: all 0.2s;
+            backdrop-filter: blur(20px);
         }
-        .card:hover { border-color: #a855f7; transform: translateY(-4px); }
+        .card:hover { 
+            border-color: rgba(255,255,255,0.2); 
+            transform: translateY(-4px); 
+        }
         .card-icon { font-size: 2.5rem; margin-bottom: 16px; }
         .card-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
         .card-desc { color: #666; font-size: 0.85rem; line-height: 1.5; margin-bottom: 24px; }
         .card-steps { color: #888; font-size: 0.8rem; margin-bottom: 20px; }
-        .card-steps span { color: #a855f7; font-weight: 600; }
         .btn {
             display: block;
-            background: #a855f7;
-            color: #fff;
+            background: #fff;
+            color: #000;
             border: none;
             border-radius: 10px;
             padding: 12px 24px;
@@ -47,48 +97,93 @@
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
-        .btn:hover { background: #9333ea; }
-        .btn.secondary { background: #222; color: #aaa; }
-        .btn.secondary:hover { background: #333; color: #fff; }
-        .footer { margin-top: 60px; color: #444; font-size: 0.8rem; text-align: center; }
-        .footer a { color: #666; text-decoration: none; }
-        .footer a:hover { color: #a855f7; }
+        .btn:hover { background: #e5e5e5; transform: translateY(-2px); }
+        .btn.secondary { 
+            background: rgba(255,255,255,0.05); 
+            color: #aaa; 
+        }
+        .btn.secondary:hover { 
+            background: rgba(255,255,255,0.1); 
+            color: #fff; 
+        }
+        .footer { 
+            margin-top: 60px; 
+            color: #444; 
+            font-size: 0.8rem; 
+            text-align: center; 
+        }
+        .footer a { 
+            color: #666; 
+            text-decoration: none; 
+            transition: color 0.2s;
+        }
+        .footer a:hover { color: #fff; }
+        
+        @media (max-width: 768px) {
+            .logo { font-size: 2rem; }
+            .cards { flex-direction: column; align-items: center; }
+            .card { width: 100%; max-width: 320px; }
+        }
     </style>
 </head>
 <body>
-    <div class="logo">ph4smo<span>api</span></div>
-    <p class="tagline">key system · ph4smo.club</p>
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
+    
+    <div class="logo">ph4smo.club</div>
+    <p class="tagline">key system</p>
 
     <div class="cards">
         <div class="card">
             <div class="card-icon">⚡</div>
             <div class="card-title">12 Hour Key</div>
-            <div class="card-desc">Get a key valid for 12 hours. Complete 2 checkpoints.</div>
-            <div class="card-steps"><span>2</span> checkpoints required</div>
-            <a href="/api/checkpoint?step=1&type=12h" class="btn">Get Key →</a>
+            <div class="card-desc">Get a key valid for 12 hours. Complete quick tasks.</div>
+            <div class="card-steps">Quick tasks</div>
+            <a href="/get-key?type=12h" class="btn">Get Key →</a>
         </div>
         <div class="card">
             <div class="card-icon">🔑</div>
             <div class="card-title">24 Hour Key</div>
-            <div class="card-desc">Get a key valid for 24 hours. Complete 3 checkpoints.</div>
-            <div class="card-steps"><span>3</span> checkpoints required</div>
-            <a href="/api/checkpoint?step=1&type=24h" class="btn">Get Key →</a>
+            <div class="card-desc">Get a key valid for 24 hours. Complete quick tasks.</div>
+            <div class="card-steps">Quick tasks</div>
+            <a href="/get-key?type=24h" class="btn">Get Key →</a>
         </div>
         <div class="card">
             <div class="card-icon">❓</div>
             <div class="card-title">Already have a key?</div>
             <div class="card-desc">Use your key in the script executor. Keys are bound to your device.</div>
             <div class="card-steps">Paste key in executor</div>
-            <a href="https://ph4smo.vercel.app" class="btn secondary" target="_blank">Visit ph4smo.club</a>
+            <a href="https://ph4smo.club" class="btn secondary">Visit ph4smo.club</a>
         </div>
     </div>
 
     <div class="footer">
         <p>Keys are bound to your device (HWID). Sharing keys will not work.</p>
         <br>
-        <a href="https://ph4smo.vercel.app" target="_blank">ph4smo.club</a>
+        <a href="https://ph4smo.club">← Back to ph4smo.club</a>
     </div>
+    
+    <script>
+        const cursor = document.querySelector('.cursor');
+        const cursorDot = document.querySelector('.cursor-dot');
+        
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            cursorDot.style.left = e.clientX + 'px';
+            cursorDot.style.top = e.clientY + 'px';
+        });
+        
+        document.querySelectorAll('.btn').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.style.transform = 'translate(-50%, -50%) scale(1.5)';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+            });
+        });
+    </script>
 </body>
 </html>
