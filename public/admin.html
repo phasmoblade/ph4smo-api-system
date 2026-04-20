@@ -126,7 +126,7 @@
         
         .form-group { margin-bottom: 16px; }
         .form-label { display: block; color: #999; font-size: 0.85rem; margin-bottom: 8px; }
-        select {
+        select, input[type="number"] {
             width: 100%;
             background: rgba(255,255,255,0.02);
             border: 1px solid rgba(255,255,255,0.08);
@@ -135,6 +135,10 @@
             color: #fff;
             font-size: 0.95rem;
             font-family: inherit;
+        }
+        select option {
+            background: #1a1a1a;
+            color: #fff;
         }
         
         .keys-table {
