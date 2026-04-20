@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel — ph4smo API</title>
+    <title>Admin Panel — ph4smo.club</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #0a0a0a;
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
             color: #fff;
             min-height: 100vh;
         }
+        
         /* Login screen */
         #loginScreen {
             min-height: 100vh;
@@ -21,22 +22,22 @@
             padding: 20px;
         }
         .login-card {
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 16px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px;
             padding: 40px;
             width: 100%;
             max-width: 380px;
             text-align: center;
+            backdrop-filter: blur(20px);
         }
-        .login-logo { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; }
-        .login-logo span { color: #a855f7; }
-        .login-sub { color: #555; font-size: 0.85rem; margin-bottom: 32px; }
+        .login-logo { font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.05em; }
+        .login-sub { color: #666; font-size: 0.85rem; margin-bottom: 32px; }
         .input {
             width: 100%;
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
             padding: 12px 16px;
             color: #fff;
             font-size: 0.95rem;
@@ -44,27 +45,27 @@
             outline: none;
             transition: border-color 0.2s;
         }
-        .input:focus { border-color: #a855f7; }
+        .input:focus { border-color: rgba(255,255,255,0.2); }
         .btn {
-            background: #a855f7;
-            color: #fff;
+            background: #fff;
+            color: #000;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 12px 24px;
             font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
             width: 100%;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
-        .btn:hover { background: #9333ea; }
-        .btn.danger { background: #ef4444; }
+        .btn:hover { background: #e5e5e5; transform: translateY(-2px); }
+        .btn.danger { background: #ef4444; color: #fff; }
         .btn.danger:hover { background: #dc2626; }
-        .btn.success { background: #22c55e; }
+        .btn.success { background: #22c55e; color: #fff; }
         .btn.success:hover { background: #16a34a; }
-        .btn.sm { padding: 6px 14px; font-size: 0.8rem; width: auto; border-radius: 6px; }
-        .btn.secondary { background: #222; color: #aaa; }
-        .btn.secondary:hover { background: #333; color: #fff; }
+        .btn.sm { padding: 6px 14px; font-size: 0.8rem; width: auto; border-radius: 8px; }
+        .btn.secondary { background: rgba(255,255,255,0.05); color: #aaa; }
+        .btn.secondary:hover { background: rgba(255,255,255,0.1); color: #fff; }
         .error-msg { color: #ef4444; font-size: 0.85rem; margin-top: 12px; }
 
         /* Main panel */
@@ -73,14 +74,13 @@
             position: fixed;
             left: 0; top: 0; bottom: 0;
             width: 220px;
-            background: #0d0d0d;
-            border-right: 1px solid #1a1a1a;
+            background: rgba(255,255,255,0.02);
+            border-right: 1px solid rgba(255,255,255,0.05);
             padding: 24px 16px;
             display: flex;
             flex-direction: column;
         }
-        .sidebar-logo { font-size: 1.2rem; font-weight: 800; margin-bottom: 4px; }
-        .sidebar-logo span { color: #a855f7; }
+        .sidebar-logo { font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.05em; }
         .sidebar-sub { color: #444; font-size: 0.75rem; margin-bottom: 32px; }
         .nav-item {
             display: flex;
@@ -94,8 +94,8 @@
             transition: all 0.15s;
             margin-bottom: 4px;
         }
-        .nav-item:hover { background: #1a1a1a; color: #ccc; }
-        .nav-item.active { background: #1a1a1a; color: #a855f7; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #ccc; }
+        .nav-item.active { background: rgba(255,255,255,0.05); color: #fff; }
         .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
         .sidebar-bottom { margin-top: auto; }
         .logout-btn {
@@ -119,32 +119,27 @@
         .page { display: none; }
         .page.active { display: block; }
         .page-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
-        .page-sub { color: #555; font-size: 0.85rem; margin-bottom: 28px; }
+        .page-sub { color: #666; font-size: 0.85rem; margin-bottom: 28px; }
 
         /* Stats cards */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-bottom: 32px; }
         .stat-card {
-            background: #111;
-            border: 1px solid #1a1a1a;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
             border-radius: 12px;
             padding: 20px;
         }
         .stat-value { font-size: 2rem; font-weight: 800; margin-bottom: 4px; }
-        .stat-label { color: #555; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
-        .stat-card.purple .stat-value { color: #a855f7; }
-        .stat-card.green  .stat-value { color: #22c55e; }
-        .stat-card.red    .stat-value { color: #ef4444; }
-        .stat-card.yellow .stat-value { color: #f59e0b; }
-        .stat-card.blue   .stat-value { color: #3b82f6; }
+        .stat-label { color: #666; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
 
         /* Table */
-        .table-wrap { background: #111; border: 1px solid #1a1a1a; border-radius: 12px; overflow: hidden; }
+        .table-wrap { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; }
         .table-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 16px 20px;
-            border-bottom: 1px solid #1a1a1a;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         .table-title { font-weight: 600; font-size: 0.95rem; }
         .table-actions { display: flex; gap: 8px; }
@@ -155,17 +150,17 @@
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: #555;
-            border-bottom: 1px solid #1a1a1a;
+            color: #666;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         td {
             padding: 12px 16px;
             font-size: 0.85rem;
-            border-bottom: 1px solid #111;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
             color: #ccc;
         }
         tr:last-child td { border-bottom: none; }
-        tr:hover td { background: #0f0f0f; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
         .badge {
             display: inline-block;
             padding: 2px 8px;
@@ -178,13 +173,13 @@
         .badge.yellow { background: rgba(245,158,11,0.15);  color: #f59e0b; }
         .badge.purple { background: rgba(168,85,247,0.15);  color: #a855f7; }
         .badge.gray   { background: rgba(107,114,128,0.15); color: #9ca3af; }
-        .key-text { font-family: monospace; color: #a855f7; font-size: 0.85rem; }
+        .key-text { font-family: monospace; color: #fff; font-size: 0.85rem; }
         .hwid-text { font-family: monospace; font-size: 0.75rem; color: #666; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         /* Gen key section */
         .gen-card {
-            background: #111;
-            border: 1px solid #1a1a1a;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 24px;
@@ -192,8 +187,8 @@
         .gen-title { font-weight: 600; margin-bottom: 16px; }
         .gen-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
         .select {
-            background: #0a0a0a;
-            border: 1px solid #333;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
             border-radius: 8px;
             padding: 10px 14px;
             color: #fff;
@@ -202,36 +197,36 @@
             cursor: pointer;
         }
         .result-box {
-            background: #0a0a0a;
-            border: 1px solid #333;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
             border-radius: 8px;
             padding: 12px 16px;
             font-family: monospace;
             font-size: 1rem;
-            color: #a855f7;
+            color: #fff;
             letter-spacing: 0.1em;
             margin-top: 16px;
             display: none;
             cursor: pointer;
         }
-        .result-hint { color: #555; font-size: 0.8rem; margin-top: 6px; display: none; }
+        .result-hint { color: #666; font-size: 0.8rem; margin-top: 6px; display: none; }
 
         /* Search */
         .search-row { display: flex; gap: 12px; margin-bottom: 16px; }
         .search-input {
             flex: 1;
-            background: #111;
-            border: 1px solid #222;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
             border-radius: 8px;
             padding: 10px 14px;
             color: #fff;
             font-size: 0.9rem;
             outline: none;
         }
-        .search-input:focus { border-color: #a855f7; }
+        .search-input:focus { border-color: rgba(255,255,255,0.2); }
 
         /* Loading */
-        .loading { color: #555; text-align: center; padding: 40px; }
+        .loading { color: #666; text-align: center; padding: 40px; }
         .empty { color: #444; text-align: center; padding: 40px; font-size: 0.9rem; }
 
         /* Toast */
@@ -239,8 +234,8 @@
             position: fixed;
             bottom: 24px;
             right: 24px;
-            background: #1a1a1a;
-            border: 1px solid #333;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 10px;
             padding: 12px 20px;
             font-size: 0.9rem;
@@ -253,6 +248,11 @@
         #toast.show { opacity: 1; transform: translateY(0); }
         #toast.success { border-color: #22c55e; color: #22c55e; }
         #toast.error   { border-color: #ef4444; color: #ef4444; }
+        
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; position: relative; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
+            .main-content { margin-left: 0; }
+        }
     </style>
 </head>
 <body>
@@ -260,7 +260,7 @@
 <!-- Login Screen -->
 <div id="loginScreen">
     <div class="login-card">
-        <div class="login-logo">ph4smo<span>api</span></div>
+        <div class="login-logo">ph4smo.club</div>
         <div class="login-sub">Admin Panel</div>
         <input type="password" class="input" id="secretInput" placeholder="Admin secret..." onkeydown="if(event.key==='Enter')login()">
         <button class="btn" onclick="login()">Login</button>
@@ -271,7 +271,7 @@
 <!-- Main Panel -->
 <div id="panel">
     <div class="sidebar">
-        <div class="sidebar-logo">ph4smo<span>api</span></div>
+        <div class="sidebar-logo">ph4smo.club</div>
         <div class="sidebar-sub">Admin Panel</div>
 
         <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
@@ -388,7 +388,6 @@ function login() {
     const s = document.getElementById('secretInput').value.trim();
     if (!s) return;
     SECRET = s;
-    // Test the secret
     fetch(`/api/admin?action=stats&secret=${encodeURIComponent(s)}`)
         .then(r => r.json())
         .then(data => {
@@ -441,12 +440,12 @@ async function loadDashboard() {
     const data = await api('stats');
     const grid = document.getElementById('statsGrid');
     grid.innerHTML = `
-        <div class="stat-card purple"><div class="stat-value">${data.total}</div><div class="stat-label">Total Keys</div></div>
-        <div class="stat-card green"><div class="stat-value">${data.active}</div><div class="stat-label">Active</div></div>
-        <div class="stat-card yellow"><div class="stat-value">${data.unused}</div><div class="stat-label">Unused</div></div>
-        <div class="stat-card gray"><div class="stat-value">${data.expired}</div><div class="stat-label">Expired</div></div>
-        <div class="stat-card red"><div class="stat-value">${data.banned}</div><div class="stat-label">Banned Keys</div></div>
-        <div class="stat-card red"><div class="stat-value">${data.bannedHWIDs}</div><div class="stat-label">Banned HWIDs</div></div>
+        <div class="stat-card"><div class="stat-value">${data.total}</div><div class="stat-label">Total Keys</div></div>
+        <div class="stat-card"><div class="stat-value">${data.active}</div><div class="stat-label">Active</div></div>
+        <div class="stat-card"><div class="stat-value">${data.unused}</div><div class="stat-label">Unused</div></div>
+        <div class="stat-card"><div class="stat-value">${data.expired}</div><div class="stat-label">Expired</div></div>
+        <div class="stat-card"><div class="stat-value">${data.banned}</div><div class="stat-label">Banned Keys</div></div>
+        <div class="stat-card"><div class="stat-value">${data.bannedHWIDs}</div><div class="stat-label">Banned HWIDs</div></div>
     `;
 }
 
@@ -473,7 +472,7 @@ function renderKeys(keys) {
                    : `<span class="hwid-text" title="${k.hwid}">${k.hwid}</span>`;
         const typeBadge = k.type === '24h'
             ? '<span class="badge purple">24h</span>'
-            : '<span class="badge blue">12h</span>';
+            : '<span class="badge green">12h</span>';
         return `<tr>
             <td><span class="key-text">${k.key}</span></td>
             <td>${typeBadge}</td>
@@ -539,9 +538,7 @@ function copyGenKey() {
 
 async function loadHWIDs() {
     document.getElementById('hwidsTable').innerHTML = '<tr><td colspan="2" class="loading">Loading...</td></tr>';
-    // We get banned HWIDs from stats for now
     const data = await api('stats');
-    // For full list we'd need a separate endpoint — show placeholder
     document.getElementById('hwidsTable').innerHTML =
         `<tr><td colspan="2" class="empty">${data.bannedHWIDs} banned HWIDs. Use the ban form above to add more.</td></tr>`;
 }
@@ -554,10 +551,6 @@ async function banHWID() {
     document.getElementById('hwidInput').value = '';
     loadHWIDs();
 }
-
-document.getElementById('secretInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') login();
-});
 </script>
 </body>
 </html>
