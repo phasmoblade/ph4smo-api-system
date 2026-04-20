@@ -20,6 +20,7 @@ import {
     banHWID,
     unbanHWID,
     getAllBannedHWIDs,
+    kv,
 } from '../lib/db.js';
 
 const CORS = {
@@ -40,13 +41,44 @@ export default async function handler(req, res) {
         return;
     }
 
+    const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress || 'unknown';
     const secret = req.query.secret || '';
+    const action = req.query.action || '';
+
+    // Check if IP is blocked due to brute-force attempts
+    const blockKey = `admin_block:${ip}`;
+    const isBlocked = await kv.get(blockKey);
+    if (isBlocked) {
+        json(res, 429, { error: 'Too many failed attempts. Try again in 15 minutes.' });
+        return;
+    }
+
+    // Verify admin secret
     if (!verifyAdminSecret(secret)) {
+        // Track failed attempts
+        const attemptsKey = `admin_attempts:${ip}`;
+        const attempts = await kv.incr(attemptsKey);
+        
+        if (attempts === 1) {
+            // Set expiry for attempts counter (5 minutes)
+            await kv.expire(attemptsKey, 300);
+        }
+        
+        if (attempts >= 5) {
+            // Block IP for 15 minutes after 5 failed attempts
+            await kv.set(blockKey, '1', { ex: 900 });
+            await kv.del(attemptsKey);
+            json(res, 429, { error: 'Too many failed attempts. Blocked for 15 minutes.' });
+            return;
+        }
+        
         json(res, 401, { error: 'Unauthorized' });
         return;
     }
 
-    const action = req.query.action || '';
+    // Successful login - clear failed attempts
+    const attemptsKey = `admin_attempts:${ip}`;
+    await kv.del(attemptsKey);
 
     try {
         switch (action) {
@@ -68,8 +100,22 @@ export default async function handler(req, res) {
                 break;
             }
 
+            case 'generate': {
+                const type = req.query.type || '12h';
+                const count = Math.min(parseInt(req.query.count) || 1, 100);
+                const keys = [];
+                
+                for (let i = 0; i < count; i++) {
+                    const key = await createKey(type);
+                    keys.push(key);
+                }
+                
+                json(res, 200, { success: true, keys, type, count: keys.length });
+                break;
+            }
+
             case 'genkey': {
-                const type = req.query.type === '24h' ? '24h' : '12h';
+                const type = req.query.type || '12h';
                 const key  = await createKey(type);
                 json(res, 200, { success: true, key, type });
                 break;

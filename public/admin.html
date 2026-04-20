@@ -11,7 +11,6 @@
             background: #000;
             color: #fff;
             min-height: 100vh;
-            padding: 20px;
         }
         
         #loginScreen {
@@ -19,6 +18,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
         .login-card {
             background: rgba(255,255,255,0.02);
@@ -40,6 +40,7 @@
             color: #fff;
             font-size: 0.95rem;
             margin-bottom: 16px;
+            font-family: inherit;
         }
         .btn {
             background: #fff;
@@ -50,11 +51,24 @@
             font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            width: 100%;
+            transition: all 0.2s;
         }
+        .btn:hover { background: #e5e5e5; }
+        .btn-secondary {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+        .btn-danger {
+            background: rgba(239,68,68,0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239,68,68,0.3);
+        }
+        .btn-danger:hover { background: rgba(239,68,68,0.2); }
         .error { color: #ef4444; font-size: 0.85rem; margin-top: 12px; }
         
-        #adminPanel { display: none; }
+        #adminPanel { display: none; padding: 20px; max-width: 1200px; margin: 0 auto; }
         .header {
             display: flex;
             justify-content: space-between;
@@ -62,15 +76,30 @@
             margin-bottom: 32px;
         }
         .title { font-size: 1.5rem; font-weight: 700; }
-        .logout-btn {
-            background: rgba(255,255,255,0.05);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            cursor: pointer;
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: #fff; }
+        .tab.active { color: #fff; border-bottom-color: #fff; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -85,18 +114,74 @@
         }
         .stat-label { color: #666; font-size: 0.85rem; margin-bottom: 8px; }
         .stat-value { font-size: 2rem; font-weight: 700; }
-        .keys-list {
+        
+        .card {
             background: rgba(255,255,255,0.02);
             border: 1px solid rgba(255,255,255,0.05);
             border-radius: 16px;
-            padding: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
         }
-        .key-item {
+        .card-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; color: #999; font-size: 0.85rem; margin-bottom: 8px; }
+        select {
+            width: 100%;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: #fff;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+        
+        .keys-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .keys-table th {
+            text-align: left;
             padding: 12px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #666;
+            font-size: 0.85rem;
+            font-weight: 600;
         }
-        .key-item:last-child { border-bottom: none; }
+        .keys-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9rem;
+        }
         .key-code { font-family: monospace; color: #4ade80; }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-active { background: rgba(34,197,94,0.1); color: #22c55e; }
+        .badge-expired { background: rgba(239,68,68,0.1); color: #ef4444; }
+        .badge-banned { background: rgba(239,68,68,0.2); color: #ef4444; }
+        
+        .action-btns { display: flex; gap: 8px; }
+        .action-btns button {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 8px;
+        }
+        
+        .success-msg {
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.3);
+            color: #22c55e;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -106,7 +191,7 @@
             <div class="login-logo">ph4smo.club</div>
             <div class="login-sub">ADMIN PANEL</div>
             <input type="password" id="passwordInput" class="input" placeholder="Enter password..." />
-            <button onclick="login()" class="btn">Login</button>
+            <button onclick="login()" class="btn" style="width: 100%;">Login</button>
             <div id="loginError" class="error" style="display:none;"></div>
         </div>
     </div>
@@ -115,27 +200,104 @@
     <div id="adminPanel">
         <div class="header">
             <div class="title">Admin Panel</div>
-            <button onclick="logout()" class="logout-btn">Logout</button>
+            <button onclick="logout()" class="btn btn-secondary">Logout</button>
         </div>
         
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-label">Total Keys</div>
-                <div class="stat-value" id="totalKeys">0</div>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('dashboard')">Dashboard</button>
+            <button class="tab" onclick="switchTab('generate')">Generate Keys</button>
+            <button class="tab" onclick="switchTab('keys')">All Keys</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-label">Total Keys</div>
+                    <div class="stat-value" id="totalKeys">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Keys</div>
+                    <div class="stat-value" id="activeKeys">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Expired Keys</div>
+                    <div class="stat-value" id="expiredKeys">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Banned Keys</div>
+                    <div class="stat-value" id="bannedKeys">0</div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Active Keys</div>
-                <div class="stat-value" id="activeKeys">0</div>
+
+            <div class="card">
+                <div class="card-title">Recent Keys</div>
+                <div id="recentKeys">Loading...</div>
             </div>
         </div>
 
-        <div class="keys-list">
-            <h3 style="margin-bottom: 16px;">Recent Keys</h3>
-            <div id="keysList">Loading...</div>
+        <!-- Generate Keys Tab -->
+        <div id="generate" class="tab-content">
+            <div class="card">
+                <div class="card-title">Generate New Key</div>
+                <div class="success-msg" id="generateSuccess"></div>
+                
+                <div class="form-group">
+                    <label class="form-label">Key Duration</label>
+                    <select id="keyDuration">
+                        <option value="12h">12 Hours</option>
+                        <option value="24h">24 Hours</option>
+                        <option value="3d">3 Days</option>
+                        <option value="7d">7 Days</option>
+                        <option value="14d">14 Days</option>
+                        <option value="30d">30 Days (1 Month)</option>
+                        <option value="90d">90 Days (3 Months)</option>
+                        <option value="180d">180 Days (6 Months)</option>
+                        <option value="365d">365 Days (1 Year)</option>
+                        <option value="lifetime">Lifetime</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Number of Keys</label>
+                    <input type="number" id="keyCount" class="input" value="1" min="1" max="100" />
+                </div>
+                
+                <button onclick="generateKeys()" class="btn">Generate Keys</button>
+            </div>
+
+            <div class="card" id="generatedKeysCard" style="display: none;">
+                <div class="card-title">Generated Keys</div>
+                <div id="generatedKeysList"></div>
+            </div>
+        </div>
+
+        <!-- All Keys Tab -->
+        <div id="keys" class="tab-content">
+            <div class="card">
+                <div class="card-title">All Keys</div>
+                <table class="keys-table" id="allKeysTable">
+                    <thead>
+                        <tr>
+                            <th>Key</th>
+                            <th>Type</th>
+                            <th>HWID</th>
+                            <th>Status</th>
+                            <th>Expires</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allKeysBody">
+                        <tr><td colspan="6" style="text-align: center; color: #666;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
+        let adminSecret = '';
+
         // Cookie helpers
         function setCookie(name, value, days) {
             const expires = new Date(Date.now() + days * 864e5).toUTCString();
@@ -172,17 +334,24 @@
                     errorEl.textContent = data.error;
                     errorEl.style.display = 'block';
                     deleteCookie('admin_session');
+                    
+                    // Disable login button if blocked
+                    if (data.error.includes('Blocked') || data.error.includes('Too many')) {
+                        document.getElementById('passwordInput').disabled = true;
+                        document.querySelector('.btn').disabled = true;
+                        document.querySelector('.btn').textContent = 'Blocked';
+                        document.querySelector('.btn').style.opacity = '0.5';
+                    }
                     return;
                 }
 
-                // Save session
-                setCookie('admin_session', password, 7); // 7 days
+                adminSecret = password;
+                setCookie('admin_session', password, 7);
 
-                // Show admin panel
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
 
-                loadKeys(password);
+                loadDashboard();
             } catch (err) {
                 errorEl.textContent = 'Connection error';
                 errorEl.style.display = 'block';
@@ -194,37 +363,166 @@
             location.reload();
         }
 
-        async function loadKeys(secret) {
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+
+            if (tabName === 'dashboard') loadDashboard();
+            if (tabName === 'keys') loadAllKeys();
+        }
+
+        async function loadDashboard() {
             try {
-                const res = await fetch('/api/admin?action=list&secret=' + encodeURIComponent(secret));
+                const res = await fetch('/api/admin?action=list&secret=' + encodeURIComponent(adminSecret));
                 const data = await res.json();
 
                 if (data.keys) {
-                    document.getElementById('totalKeys').textContent = data.keys.length;
-                    
-                    const active = data.keys.filter(k => !k.banned && (!k.expires || k.expires > Date.now())).length;
-                    document.getElementById('activeKeys').textContent = active;
+                    const now = Date.now();
+                    const total = data.keys.length;
+                    const active = data.keys.filter(k => !k.banned && (!k.expires || k.expires > now)).length;
+                    const expired = data.keys.filter(k => k.expires && k.expires < now && !k.banned).length;
+                    const banned = data.keys.filter(k => k.banned).length;
 
-                    const keysList = document.getElementById('keysList');
-                    if (data.keys.length === 0) {
-                        keysList.innerHTML = '<div style="color: #666;">No keys yet</div>';
+                    document.getElementById('totalKeys').textContent = total;
+                    document.getElementById('activeKeys').textContent = active;
+                    document.getElementById('expiredKeys').textContent = expired;
+                    document.getElementById('bannedKeys').textContent = banned;
+
+                    const recentKeys = document.getElementById('recentKeys');
+                    if (total === 0) {
+                        recentKeys.innerHTML = '<div style="color: #666; text-align: center; padding: 20px;">No keys yet</div>';
                     } else {
-                        keysList.innerHTML = data.keys.slice(0, 10).map(k => `
-                            <div class="key-item">
-                                <div class="key-code">${k.key}</div>
-                                <div style="font-size: 0.85rem; color: #666; margin-top: 4px;">
-                                    ${k.type} | ${k.hwid || 'Not used'} | ${k.banned ? 'BANNED' : 'Active'}
-                                </div>
-                            </div>
-                        `).join('');
+                        recentKeys.innerHTML = '<table class="keys-table"><tbody>' + 
+                            data.keys.slice(0, 5).map(k => {
+                                const status = k.banned ? 'banned' : (k.expires && k.expires < now ? 'expired' : 'active');
+                                const badgeClass = status === 'active' ? 'badge-active' : (status === 'banned' ? 'badge-banned' : 'badge-expired');
+                                return `
+                                    <tr>
+                                        <td><span class="key-code">${k.key}</span></td>
+                                        <td>${k.type}</td>
+                                        <td style="color: #666;">${k.hwid || 'Not used'}</td>
+                                        <td><span class="badge ${badgeClass}">${status}</span></td>
+                                    </tr>
+                                `;
+                            }).join('') + '</tbody></table>';
                     }
                 }
+            } catch (err) {
+                console.error('Failed to load dashboard:', err);
+            }
+        }
+
+        async function generateKeys() {
+            const duration = document.getElementById('keyDuration').value;
+            const count = parseInt(document.getElementById('keyCount').value);
+            const successEl = document.getElementById('generateSuccess');
+
+            try {
+                const res = await fetch(`/api/admin?action=generate&secret=${encodeURIComponent(adminSecret)}&type=${duration}&count=${count}`);
+                const data = await res.json();
+
+                if (data.keys) {
+                    successEl.textContent = `Successfully generated ${data.keys.length} key(s)!`;
+                    successEl.style.display = 'block';
+
+                    const card = document.getElementById('generatedKeysCard');
+                    const list = document.getElementById('generatedKeysList');
+                    
+                    list.innerHTML = data.keys.map(k => `
+                        <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+                            <span class="key-code" style="font-size: 1.1rem;">${k}</span>
+                        </div>
+                    `).join('');
+                    
+                    card.style.display = 'block';
+
+                    setTimeout(() => {
+                        successEl.style.display = 'none';
+                    }, 5000);
+
+                    loadDashboard();
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                alert('Connection error');
+            }
+        }
+
+        async function loadAllKeys() {
+            try {
+                const res = await fetch('/api/admin?action=list&secret=' + encodeURIComponent(adminSecret));
+                const data = await res.json();
+
+                const tbody = document.getElementById('allKeysBody');
+                
+                if (!data.keys || data.keys.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No keys yet</td></tr>';
+                    return;
+                }
+
+                const now = Date.now();
+                tbody.innerHTML = data.keys.map(k => {
+                    const status = k.banned ? 'banned' : (k.expires && k.expires < now ? 'expired' : 'active');
+                    const badgeClass = status === 'active' ? 'badge-active' : (status === 'banned' ? 'badge-banned' : 'badge-expired');
+                    const expiresText = k.expires ? new Date(k.expires).toLocaleString() : 'Never';
+                    
+                    return `
+                        <tr>
+                            <td><span class="key-code">${k.key}</span></td>
+                            <td>${k.type}</td>
+                            <td style="color: #666; font-size: 0.85rem;">${k.hwid || 'Not used'}</td>
+                            <td><span class="badge ${badgeClass}">${status}</span></td>
+                            <td style="color: #666; font-size: 0.85rem;">${expiresText}</td>
+                            <td>
+                                <div class="action-btns">
+                                    ${!k.banned ? `<button class="btn btn-danger" onclick="banKey('${k.key}')">Ban</button>` : `<button class="btn btn-secondary" onclick="unbanKey('${k.key}')">Unban</button>`}
+                                    <button class="btn btn-danger" onclick="deleteKey('${k.key}')">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
             } catch (err) {
                 console.error('Failed to load keys:', err);
             }
         }
 
-        // Enter key to login
+        async function banKey(key) {
+            if (!confirm('Ban this key?')) return;
+            try {
+                await fetch(`/api/admin?action=ban&secret=${encodeURIComponent(adminSecret)}&key=${key}`);
+                loadAllKeys();
+                loadDashboard();
+            } catch (err) {
+                alert('Error banning key');
+            }
+        }
+
+        async function unbanKey(key) {
+            try {
+                await fetch(`/api/admin?action=unban&secret=${encodeURIComponent(adminSecret)}&key=${key}`);
+                loadAllKeys();
+                loadDashboard();
+            } catch (err) {
+                alert('Error unbanning key');
+            }
+        }
+
+        async function deleteKey(key) {
+            if (!confirm('Delete this key permanently?')) return;
+            try {
+                await fetch(`/api/admin?action=delete&secret=${encodeURIComponent(adminSecret)}&key=${key}`);
+                loadAllKeys();
+                loadDashboard();
+            } catch (err) {
+                alert('Error deleting key');
+            }
+        }
+
         document.getElementById('passwordInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') login();
         });

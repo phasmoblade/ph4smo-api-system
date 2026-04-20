@@ -76,9 +76,9 @@ export default async function handler(req, res) {
 
         // First use: bind HWID and set expiry
         if (!data.hwid) {
-            const hours   = data.type === '12h' ? 12 : 24;
+            const hours   = data.duration !== null ? data.duration : null;
             data.hwid     = hwid;
-            data.expires  = now + hours * 60 * 60 * 1000;
+            data.expires  = hours !== null ? now + hours * 60 * 60 * 1000 : null;
             data.usedAt   = now;
             await saveKey(key, data);
         } else {
@@ -90,7 +90,7 @@ export default async function handler(req, res) {
             }
         }
 
-        // Check expiry
+        // Check expiry (lifetime keys have null expires)
         if (data.expires && now > data.expires) {
             res.writeHead(200, { 'Content-Type': 'application/json', ...CORS });
             res.end(JSON.stringify(signResponse({ valid: false, reason: 'key_expired' })));
@@ -98,13 +98,14 @@ export default async function handler(req, res) {
         }
 
         // All good
-        const expiresIn = Math.max(0, Math.floor((data.expires - now) / 1000 / 60)); // minutes
+        const expiresIn = data.expires ? Math.max(0, Math.floor((data.expires - now) / 1000 / 60)) : null;
         res.writeHead(200, { 'Content-Type': 'application/json', ...CORS });
         res.end(JSON.stringify(signResponse({
             valid:     true,
             type:      data.type,
             expires:   data.expires,
             expiresIn: expiresIn,
+            lifetime:  data.expires === null,
         })));
 
     } catch (err) {
