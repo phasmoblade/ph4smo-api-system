@@ -44,7 +44,6 @@ export default async function handler(req, res) {
 
     const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress || 'unknown';
     const type = req.query.type === '24h' ? '24h' : '12h';
-    const workinkToken = req.query.token || null;
 
     // Rate limit: 10 checkpoint requests per minute per IP
     const allowed = await checkRateLimit(ip, 'checkpoint', 10, 60);
@@ -55,57 +54,43 @@ export default async function handler(req, res) {
     }
 
     try {
-        // ── Start new checkpoint flow ──
-        if (!workinkToken) {
-            // Get base URL from request
-            const protocol = req.headers['x-forwarded-proto'] || 'https';
-            const host = req.headers['x-forwarded-host'] || req.headers.host;
-            const baseUrl = `${protocol}://${host}`;
-            
-            // Create checkpoint token for verification later
-            const checkpointToken = await createCheckpointToken(1, type, ip, {});
+        // Check if user is returning from work.ink (has completed tasks)
+        const referer = req.headers.referer || req.headers.referrer || '';
+        const isFromWorkInk = referer.includes('work.ink');
 
-            // Build callback URL with checkpoint token
-            const callbackUrl = `${baseUrl}/api/checkpoint?type=${type}&ctoken=${checkpointToken}`;
-            
-            // Build work.ink link with r parameter (redirect after completion)
-            const workinkUrl = `https://work.ink/${WORKINK_LINK_ID}/ph4smoclub-key?r=${encodeURIComponent(callbackUrl)}`;
+        // ── Start new checkpoint flow ──
+        if (!isFromWorkInk) {
+            // Store pending key request in Redis with IP as key
+            await createCheckpointToken(1, type, ip, { timestamp: Date.now() });
+
+            // Redirect to work.ink
+            const workinkUrl = `https://work.ink/${WORKINK_LINK_ID}/ph4smoclub-key`;
             
             res.writeHead(302, { Location: workinkUrl, ...CORS });
             res.end();
             return;
         }
 
-        // ── Verify completion and generate key ──
-        const checkpointToken = req.query.ctoken || null;
-        if (!checkpointToken) {
+        // ── User returned from work.ink - generate key ──
+        // Check if there's a pending request for this IP
+        const pendingRequest = await getCheckpointToken(`pending:${ip}`);
+        if (!pendingRequest) {
             res.writeHead(302, {
-                Location: `/get-key?error=missing_token&type=${type}`,
+                Location: `/get-key?error=no_pending_request`,
                 ...CORS
             });
             res.end();
             return;
         }
 
-        // Validate checkpoint token
-        const tokenData = await getCheckpointToken(checkpointToken);
-        if (!tokenData) {
-            res.writeHead(302, {
-                Location: `/get-key?error=token_expired&type=${type}`,
-                ...CORS
-            });
-            res.end();
-            return;
-        }
-
-        // Consume the token (one-time use)
-        await deleteCheckpointToken(checkpointToken);
+        // Delete the pending request
+        await deleteCheckpointToken(`pending:${ip}`);
 
         // Generate key
-        const key = await createKey(type);
+        const key = await createKey(pendingRequest.keyType);
         
         res.writeHead(302, {
-            Location: `/checkpoint?success=1&key=${key}&type=${type}`,
+            Location: `/checkpoint?success=1&key=${key}&type=${pendingRequest.keyType}`,
             ...CORS
         });
         res.end();
