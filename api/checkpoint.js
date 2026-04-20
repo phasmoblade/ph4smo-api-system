@@ -65,14 +65,11 @@ export default async function handler(req, res) {
             // Create checkpoint token for verification later
             const checkpointToken = await createCheckpointToken(1, type, ip, {});
 
-            // Build destination URL with {TOKEN} placeholder
-            const destinationUrl = `${baseUrl}/api/checkpoint?type=${type}&token={TOKEN}&ctoken=${checkpointToken}`;
+            // Build callback URL with checkpoint token
+            const callbackUrl = `${baseUrl}/api/checkpoint?type=${type}&ctoken=${checkpointToken}`;
             
-            // Get work.ink override token
-            const srToken = await getWorkInkToken(destinationUrl);
-            
-            // Build work.ink link with sr parameter
-            const workinkUrl = `https://work.ink/${WORKINK_LINK_ID}?sr=${srToken}`;
+            // Build work.ink link with r parameter (redirect after completion)
+            const workinkUrl = `https://work.ink/${WORKINK_LINK_ID}/ph4smoclub-key?r=${encodeURIComponent(callbackUrl)}`;
             
             res.writeHead(302, { Location: workinkUrl, ...CORS });
             res.end();
