@@ -91,9 +91,65 @@
             display: none;
         }
         
+        .captcha-box {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .captcha-question {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        
+        input[type="text"]::placeholder {
+            color: #666;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover:not(:disabled) {
+            background: rgba(255,255,255,0.12);
+            border-color: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
         .options {
             display: grid;
             gap: 16px;
+            margin-top: 24px;
         }
         
         .option-btn {
@@ -118,6 +174,13 @@
         .option-icon { font-size: 2rem; margin-bottom: 12px; }
         .option-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 4px; }
         .option-desc { color: #666; font-size: 0.85rem; }
+        
+        .timer {
+            text-align: center;
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 12px;
+        }
         
         .back-link {
             margin-top: 24px;
@@ -147,21 +210,34 @@
 
     <div class="card">
         <div class="card-title">🔑 Get Your Key</div>
-        <div class="card-desc">Complete tasks to receive your key. Keys are bound to your device.</div>
+        <div class="card-desc">Complete verification to receive your key. Keys are bound to your device.</div>
 
         <div class="error-box" id="errorBox"></div>
 
-        <div class="options">
-            <a href="/api/checkpoint?type=12h" class="option-btn">
-                <div class="option-icon">⚡</div>
-                <div class="option-title">12 Hour Key</div>
-                <div class="option-desc">1 checkpoint</div>
-            </a>
-            <a href="/api/checkpoint?type=24h" class="option-btn">
-                <div class="option-icon">🔑</div>
-                <div class="option-title">24 Hour Key</div>
-                <div class="option-desc">2 checkpoints</div>
-            </a>
+        <!-- Step 1: CAPTCHA -->
+        <div id="step1">
+            <div class="captcha-box">
+                <div class="captcha-question" id="captchaQuestion">Loading...</div>
+                <input type="text" id="captchaAnswer" placeholder="Enter answer" maxlength="4">
+                <button class="btn" id="verifyBtn">Verify</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Key Options -->
+        <div id="step2" style="display:none;">
+            <div class="options">
+                <a href="/api/checkpoint?type=12h" class="option-btn" id="key12h">
+                    <div class="option-icon">⚡</div>
+                    <div class="option-title">12 Hour Key</div>
+                    <div class="option-desc">1 checkpoint</div>
+                </a>
+                <a href="/api/checkpoint?type=24h" class="option-btn" id="key24h">
+                    <div class="option-icon">🔑</div>
+                    <div class="option-title">24 Hour Key</div>
+                    <div class="option-desc">2 checkpoints</div>
+                </a>
+            </div>
+            <div class="timer" id="timer"></div>
         </div>
         
         <div class="back-link">
@@ -170,6 +246,7 @@
     </div>
 
     <script>
+        // Custom cursor
         const cursor = document.querySelector('.cursor');
         const cursorDot = document.querySelector('.cursor-dot');
         
@@ -180,7 +257,7 @@
             cursorDot.style.top = e.clientY + 'px';
         });
         
-        document.querySelectorAll('.option-btn').forEach(el => {
+        document.querySelectorAll('.option-btn, .btn').forEach(el => {
             el.addEventListener('mouseenter', () => {
                 cursor.style.transform = 'translate(-50%, -50%) scale(1.5)';
             });
@@ -189,19 +266,117 @@
             });
         });
         
-        const params = new URLSearchParams(window.location.search);
-        const error  = params.get('error');
-        if (error) {
-            const box = document.getElementById('errorBox');
-            const msgs = {
-                token_expired: 'Your session expired (10 min limit). Please start over.',
-                invalid_step:  'Invalid session. Please start over.',
-                missing_token: 'Missing verification token. Please start over.',
-                not_completed: 'Tasks not completed. Please complete all tasks.',
-            };
-            box.textContent = msgs[error] || 'Something went wrong. Please try again.';
-            box.style.display = 'block';
+        // Anti-DDoS: Rate limiting
+        const RATE_LIMIT_KEY = 'ph4smo_rate_limit';
+        const MAX_ATTEMPTS = 5;
+        const RATE_LIMIT_WINDOW = 60000;
+        
+        function checkRateLimit() {
+            const now = Date.now();
+            const data = JSON.parse(localStorage.getItem(RATE_LIMIT_KEY) || '{"attempts":0,"timestamp":0}');
+            
+            if (now - data.timestamp > RATE_LIMIT_WINDOW) {
+                data.attempts = 0;
+                data.timestamp = now;
+            }
+            
+            if (data.attempts >= MAX_ATTEMPTS) {
+                const timeLeft = Math.ceil((RATE_LIMIT_WINDOW - (now - data.timestamp)) / 1000);
+                showError(`Too many attempts! Wait ${timeLeft}s`);
+                return false;
+            }
+            
+            data.attempts++;
+            localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(data));
+            return true;
         }
+        
+        // Anti-DevTools
+        (function() {
+            document.addEventListener('contextmenu', e => e.preventDefault());
+            document.addEventListener('keydown', e => {
+                if (e.key === 'F12' || 
+                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
+                    (e.ctrlKey && e.key === 'U')) {
+                    e.preventDefault();
+                }
+            });
+        })();
+        
+        // Math CAPTCHA
+        let captchaAnswer = 0;
+        
+        function generateCaptcha() {
+            const num1 = Math.floor(Math.random() * 20) + 1;
+            const num2 = Math.floor(Math.random() * 20) + 1;
+            const operations = ['+', '-', '*'];
+            const operation = operations[Math.floor(Math.random() * operations.length)];
+            
+            let question = `${num1} ${operation} ${num2} = ?`;
+            
+            switch(operation) {
+                case '+': captchaAnswer = num1 + num2; break;
+                case '-': captchaAnswer = num1 - num2; break;
+                case '*': captchaAnswer = num1 * num2; break;
+            }
+            
+            document.getElementById('captchaQuestion').textContent = question;
+        }
+        
+        // Show error
+        function showError(msg) {
+            const box = document.getElementById('errorBox');
+            box.textContent = msg;
+            box.style.display = 'block';
+            setTimeout(() => box.style.display = 'none', 5000);
+        }
+        
+        // Verify CAPTCHA
+        document.getElementById('verifyBtn').addEventListener('click', function() {
+            if (!checkRateLimit()) return;
+            
+            const userAnswer = parseInt(document.getElementById('captchaAnswer').value);
+            
+            if (userAnswer === captchaAnswer) {
+                document.getElementById('step1').style.display = 'none';
+                document.getElementById('step2').style.display = 'block';
+                
+                // Countdown
+                let countdown = 3;
+                const timerEl = document.getElementById('timer');
+                const interval = setInterval(() => {
+                    timerEl.textContent = `Wait ${countdown}s before selecting...`;
+                    countdown--;
+                    
+                    if (countdown < 0) {
+                        clearInterval(interval);
+                        timerEl.textContent = '';
+                    }
+                }, 1000);
+            } else {
+                showError('Wrong answer! Try again.');
+                generateCaptcha();
+                document.getElementById('captchaAnswer').value = '';
+            }
+        });
+        
+        // URL error handling
+        const params = new URLSearchParams(window.location.search);
+        const error = params.get('error');
+        if (error) {
+            const msgs = {
+                token_expired: 'Session expired (10 min). Start over.',
+                invalid_step: 'Invalid session. Start over.',
+                missing_token: 'Missing token. Start over.',
+                not_completed: 'Tasks not completed.',
+            };
+            showError(msgs[error] || 'Something went wrong.');
+        }
+        
+        // Initialize
+        window.onload = function() {
+            generateCaptcha();
+        };
     </script>
 </body>
 </html>
