@@ -8,6 +8,8 @@
     { "src": "/api/(.*)", "dest": "/api/$1.js" },
     { "src": "/admin", "dest": "/public/admin.html" },
     { "src": "/get-key", "dest": "/public/getkey.html" },
+    { "src": "/checkpoint/1", "dest": "/public/checkpoint1.html" },
+    { "src": "/checkpoint/2", "dest": "/public/checkpoint2.html" },
     { "src": "/checkpoint", "dest": "/public/checkpoint.html" },
     { "src": "/", "dest": "/public/index.html" },
     { "src": "/(.*)", "dest": "/public/$1" }

@@ -14,7 +14,11 @@ import {
     blockIP,
 } from '../lib/db.js';
 
-const WORKINK_LINK_ID = process.env.WORKINK_LINK_ID || 'YOUR_LINK_ID';
+const WORKINK_LINKS = {
+    '12h': 'https://work.ink/2wGI/ph4smoclub-check-1-12h',
+    '24h_step1': 'https://work.ink/2wGI/ph4smoclub-check1',
+    '24h_step2': 'https://work.ink/2wGI/ph4smoclub-check-2'
+};
 
 const CORS = {
     'Access-Control-Allow-Origin': '*',
@@ -89,8 +93,8 @@ h1{font-size:2rem;margin-bottom:16px}p{color:#999;line-height:1.6;margin-bottom:
             };
             await createCheckpointToken(1, type, ip, session);
 
-            // Redirect to work.ink
-            const workinkUrl = `https://work.ink/${WORKINK_LINK_ID}/ph4smoclub-key`;
+            // Redirect to work.ink (choose link based on type)
+            const workinkUrl = type === '24h' ? WORKINK_LINKS['24h_step1'] : WORKINK_LINKS['12h'];
             res.writeHead(302, { Location: workinkUrl, ...CORS });
             res.end();
             return;
@@ -124,9 +128,9 @@ h1{font-size:2rem;margin-bottom:16px}p{color:#999;line-height:1.6;margin-bottom:
             session.step = currentStep + 1;
             await updateCheckpointToken(tokenKey, session);
 
-            // Redirect to next checkpoint
+            // Redirect to work.ink for step 2 (only for 24h)
             res.writeHead(302, {
-                Location: `/checkpoint/${currentStep + 1}?type=${session.keyType}`,
+                Location: WORKINK_LINKS['24h_step2'],
                 ...CORS
             });
             res.end();
