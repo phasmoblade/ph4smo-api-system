@@ -8,6 +8,8 @@ import {
     signResponse,
     checkRateLimit,
     isHWIDBanned,
+    getActiveKeyByHWID,
+    setActiveKeyForHWID,
 } from '../lib/db.js';
 
 const CORS = {
@@ -76,11 +78,23 @@ export default async function handler(req, res) {
 
         // First use: bind HWID and set expiry
         if (!data.hwid) {
+            // Check if this HWID already has an active key
+            const existingKey = await getActiveKeyByHWID(hwid);
+            if (existingKey && existingKey.key !== key) {
+                res.writeHead(200, { 'Content-Type': 'application/json', ...CORS });
+                res.end(JSON.stringify(signResponse({ valid: false, reason: 'hwid_has_key' })));
+                return;
+            }
+
             const hours   = data.duration !== null ? data.duration : null;
             data.hwid     = hwid;
             data.expires  = hours !== null ? now + hours * 60 * 60 * 1000 : null;
             data.usedAt   = now;
             await saveKey(key, data);
+
+            // Register this key as active for this HWID
+            const expiresSec = hours !== null ? hours * 3600 : null;
+            await setActiveKeyForHWID(hwid, key, expiresSec);
         } else {
             // HWID mismatch
             if (data.hwid !== hwid) {

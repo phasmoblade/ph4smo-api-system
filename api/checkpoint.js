@@ -10,6 +10,8 @@ import {
     deleteCheckpointToken,
     createKey,
     checkRateLimit,
+    isIPBlocked,
+    blockIP,
 } from '../lib/db.js';
 
 const WORKINK_LINK_ID = process.env.WORKINK_LINK_ID || 'YOUR_LINK_ID';
@@ -39,27 +41,53 @@ export default async function handler(req, res) {
         return;
     }
 
+    // Anti-bypass: check if IP is blocked
+    const blockStatus = await isIPBlocked(ip);
+    if (blockStatus.blocked) {
+        const minutesLeft = Math.ceil((blockStatus.unlocksAt - Date.now()) / 1000 / 60);
+        res.writeHead(403, { 'Content-Type': 'text/html', ...CORS });
+        res.end(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Blocked - ph4smo.club</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;background:#000;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:40px;text-align:center;max-width:400px}
+h1{font-size:2rem;margin-bottom:16px}p{color:#999;line-height:1.6}</style></head>
+<body><div class="card"><h1>ph4smo.club</h1>
+<p>Bypass detected. You are blocked from getting a key for <b>${minutesLeft} minute${minutesLeft !== 1 ? 's' : ''}</b>.</p></div></body></html>`);
+        return;
+    }
+
     try {
         const referer = req.headers.referer || req.headers.referrer || '';
         const isFromWorkInk = referer.includes('work.ink');
 
         // ── Starting new checkpoint flow ──
         if (!isFromWorkInk) {
-            // Create or get existing checkpoint session
             const tokenKey = `pending:${ip}`;
-            let session = await getCheckpointToken(tokenKey);
+            const existingSession = await getCheckpointToken(tokenKey);
 
-            if (!session) {
-                // New session
-                session = {
-                    step: 1,
-                    keyType: type,
-                    ip,
-                    createdAt: Date.now(),
-                    completedSteps: []
-                };
-                await createCheckpointToken(1, type, ip, session);
+            // If session exists but user came back without work.ink referer = bypass detected
+            if (existingSession) {
+                await blockIP(ip, 7200); // block for 2 hours
+                await deleteCheckpointToken(tokenKey);
+                res.writeHead(403, { 'Content-Type': 'text/html', ...CORS });
+                res.end(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Blocked - ph4smo.club</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;background:#000;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:40px;text-align:center;max-width:400px}
+h1{font-size:2rem;margin-bottom:16px}p{color:#999;line-height:1.6;margin-bottom:8px}</style></head>
+<body><div class="card"><h1>ph4smo.club</h1>
+<p>Ad bypass detected.</p>
+<p>You are blocked from getting a key for <b>2 hours</b>.</p></div></body></html>`);
+                return;
             }
+
+            // New session - create and redirect to work.ink
+            const session = {
+                step: 1,
+                keyType: type,
+                ip,
+                createdAt: Date.now(),
+                completedSteps: []
+            };
+            await createCheckpointToken(1, type, ip, session);
 
             // Redirect to work.ink
             const workinkUrl = `https://work.ink/${WORKINK_LINK_ID}/ph4smoclub-key`;
