@@ -178,32 +178,36 @@
             border-radius: 16px;
             padding: 24px;
             margin-bottom: 24px;
-            text-align: center;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100px;
+            overflow: hidden;
         }
         
         .captcha-box > div {
-            transform-origin: center;
+            max-width: 100%;
         }
         
         @media (max-width: 768px) {
             .captcha-box {
-                padding: 16px;
-                overflow: hidden;
+                padding: 12px;
             }
             
-            .captcha-box > div {
-                max-width: 100%;
-                transform: scale(0.85);
+            /* Make hCaptcha responsive */
+            .h-captcha {
+                transform: scale(0.9);
+                transform-origin: center;
             }
         }
         
         @media (max-width: 400px) {
-            .captcha-box > div {
-                transform: scale(0.75);
+            .captcha-box {
+                padding: 8px;
+            }
+            
+            .h-captcha {
+                transform: scale(0.8);
             }
         }
         
