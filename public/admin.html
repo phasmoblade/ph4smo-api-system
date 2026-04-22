@@ -169,6 +169,7 @@
         .badge-active { background: rgba(34,197,94,0.1); color: #22c55e; }
         .badge-expired { background: rgba(239,68,68,0.1); color: #ef4444; }
         .badge-banned { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .badge-premium { background: rgba(168,85,247,0.1); color: #a855f7; border: 1px solid rgba(168,85,247,0.3); }
         
         .action-btns { display: flex; gap: 8px; }
         .action-btns button {
@@ -263,6 +264,14 @@
                 </div>
                 
                 <div class="form-group">
+                    <label class="form-label">Key Tier</label>
+                    <select id="keyTier">
+                        <option value="regular">Regular</option>
+                        <option value="premium">Premium (💎)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
                     <label class="form-label">Number of Keys</label>
                     <input type="number" id="keyCount" class="input" value="1" min="1" max="100" />
                 </div>
@@ -279,7 +288,29 @@
         <!-- All Keys Tab -->
         <div id="keys" class="tab-content">
             <div class="card">
-                <div class="card-title">All Keys</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div class="card-title" style="margin-bottom: 0;">All Keys</div>
+                    <div style="display: flex; gap: 8px;">
+                        <select id="timeFilter" onchange="loadAllKeys()" style="width: auto; padding: 8px 12px; font-size: 0.85rem;">
+                            <option value="all">All Time</option>
+                            <option value="day">Last 24 Hours</option>
+                            <option value="week">Last Week</option>
+                            <option value="month">Last Month</option>
+                            <option value="year">Last Year</option>
+                        </select>
+                        <select id="statusFilter" onchange="loadAllKeys()" style="width: auto; padding: 8px 12px; font-size: 0.85rem;">
+                            <option value="all">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="expired">Expired</option>
+                            <option value="banned">Banned</option>
+                        </select>
+                        <select id="typeFilter" onchange="loadAllKeys()" style="width: auto; padding: 8px 12px; font-size: 0.85rem;">
+                            <option value="all">All Types</option>
+                            <option value="premium">Premium</option>
+                            <option value="regular">Regular</option>
+                        </select>
+                    </div>
+                </div>
                 <table class="keys-table" id="allKeysTable">
                     <thead>
                         <tr>
@@ -287,12 +318,13 @@
                             <th>Type</th>
                             <th>HWID</th>
                             <th>Status</th>
+                            <th>Created</th>
                             <th>Expires</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="allKeysBody">
-                        <tr><td colspan="6" style="text-align: center; color: #666;">Loading...</td></tr>
+                        <tr><td colspan="7" style="text-align: center; color: #666;">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -421,23 +453,26 @@
 
         async function generateKeys() {
             const duration = document.getElementById('keyDuration').value;
+            const tier = document.getElementById('keyTier').value;
             const count = parseInt(document.getElementById('keyCount').value);
             const successEl = document.getElementById('generateSuccess');
 
             try {
-                const res = await fetch(`/api/admin?action=generate&secret=${encodeURIComponent(adminSecret)}&type=${duration}&count=${count}`);
+                const res = await fetch(`/api/admin?action=generate&secret=${encodeURIComponent(adminSecret)}&type=${duration}&tier=${tier}&count=${count}`);
                 const data = await res.json();
 
                 if (data.keys) {
-                    successEl.textContent = `Successfully generated ${data.keys.length} key(s)!`;
+                    const tierLabel = tier === 'premium' ? ' Premium' : '';
+                    successEl.textContent = `Successfully generated ${data.keys.length}${tierLabel} key(s)!`;
                     successEl.style.display = 'block';
 
                     const card = document.getElementById('generatedKeysCard');
                     const list = document.getElementById('generatedKeysList');
                     
                     list.innerHTML = data.keys.map(k => `
-                        <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+                        <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
                             <span class="key-code" style="font-size: 1.1rem;">${k}</span>
+                            ${tier === 'premium' ? '<span class="badge badge-premium">💎 PREMIUM</span>' : ''}
                         </div>
                     `).join('');
                     
@@ -464,22 +499,63 @@
                 const tbody = document.getElementById('allKeysBody');
                 
                 if (!data.keys || data.keys.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No keys yet</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">No keys yet</td></tr>';
                     return;
                 }
 
                 const now = Date.now();
-                tbody.innerHTML = data.keys.map(k => {
+                const timeFilter = document.getElementById('timeFilter').value;
+                const statusFilter = document.getElementById('statusFilter').value;
+                const typeFilter = document.getElementById('typeFilter').value;
+                
+                // Time filtering
+                let filteredKeys = data.keys;
+                if (timeFilter !== 'all') {
+                    const timeRanges = {
+                        day: 24 * 60 * 60 * 1000,
+                        week: 7 * 24 * 60 * 60 * 1000,
+                        month: 30 * 24 * 60 * 60 * 1000,
+                        year: 365 * 24 * 60 * 60 * 1000
+                    };
+                    const cutoff = now - timeRanges[timeFilter];
+                    filteredKeys = filteredKeys.filter(k => k.createdAt && k.createdAt >= cutoff);
+                }
+                
+                // Status filtering
+                if (statusFilter !== 'all') {
+                    filteredKeys = filteredKeys.filter(k => {
+                        const status = k.banned ? 'banned' : (k.expires && k.expires < now ? 'expired' : 'active');
+                        return status === statusFilter;
+                    });
+                }
+                
+                // Type filtering
+                if (typeFilter !== 'all') {
+                    filteredKeys = filteredKeys.filter(k => {
+                        const isPremium = k.premium === true;
+                        return typeFilter === 'premium' ? isPremium : !isPremium;
+                    });
+                }
+
+                if (filteredKeys.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">No keys match filters</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = filteredKeys.map(k => {
                     const status = k.banned ? 'banned' : (k.expires && k.expires < now ? 'expired' : 'active');
                     const badgeClass = status === 'active' ? 'badge-active' : (status === 'banned' ? 'badge-banned' : 'badge-expired');
                     const expiresText = k.expires ? new Date(k.expires).toLocaleString() : 'Never';
+                    const createdText = k.createdAt ? new Date(k.createdAt).toLocaleString() : 'Unknown';
+                    const premiumBadge = k.premium ? '<span class="badge badge-premium" style="margin-left: 4px;">💎</span>' : '';
                     
                     return `
                         <tr>
                             <td><span class="key-code">${k.key}</span></td>
-                            <td>${k.type}</td>
+                            <td>${k.type}${premiumBadge}</td>
                             <td style="color: #666; font-size: 0.85rem;">${k.hwid || 'Not used'}</td>
                             <td><span class="badge ${badgeClass}">${status}</span></td>
+                            <td style="color: #666; font-size: 0.85rem;">${createdText}</td>
                             <td style="color: #666; font-size: 0.85rem;">${expiresText}</td>
                             <td>
                                 <div class="action-btns">

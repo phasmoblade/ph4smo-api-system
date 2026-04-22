@@ -120,6 +120,7 @@ export default async function handler(req, res) {
             expires:   data.expires,
             expiresIn: expiresIn,
             lifetime:  data.expires === null,
+            premium:   data.premium || false,
         })));
 
     } catch (err) {

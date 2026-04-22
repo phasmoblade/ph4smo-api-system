@@ -89,12 +89,12 @@ export default async function handler(req, res) {
                 const formatted = keys.map(k => ({
                     key:       k.key,
                     type:      k.type,
-                    hwid:      k.hwid || 'not used',
-                    banned:    k.banned,
-                    expires:   k.expires ? new Date(k.expires).toISOString() : 'not activated',
-                    expired:   k.expires ? now > k.expires : false,
-                    createdAt: new Date(k.createdAt).toISOString(),
-                    usedAt:    k.usedAt ? new Date(k.usedAt).toISOString() : 'never',
+                    hwid:      k.hwid || null,
+                    banned:    k.banned || false,
+                    premium:   k.premium || false,
+                    expires:   k.expires || null,
+                    createdAt: k.createdAt || Date.now(),
+                    usedAt:    k.usedAt || null,
                 }));
                 json(res, 200, { count: formatted.length, keys: formatted });
                 break;
@@ -102,15 +102,16 @@ export default async function handler(req, res) {
 
             case 'generate': {
                 const type = req.query.type || '12h';
+                const tier = req.query.tier || 'regular';
                 const count = Math.min(parseInt(req.query.count) || 1, 100);
                 const keys = [];
                 
                 for (let i = 0; i < count; i++) {
-                    const key = await createKey(type);
+                    const key = await createKey(type, tier === 'premium');
                     keys.push(key);
                 }
                 
-                json(res, 200, { success: true, keys, type, count: keys.length });
+                json(res, 200, { success: true, keys, type, tier, count: keys.length });
                 break;
             }
 
