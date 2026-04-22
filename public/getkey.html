@@ -325,11 +325,23 @@
     <script>
         // Detect region and set price
         async function detectRegionAndSetPrice() {
+            const priceEl = document.getElementById('lifetimePrice');
+            
             try {
-                const response = await fetch('https://ipapi.co/json/');
+                // Check browser language first
+                const browserLang = navigator.language || navigator.userLanguage;
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                
+                // If browser language is Russian or timezone is in Russia
+                if (browserLang.startsWith('ru') || timezone.includes('Moscow') || timezone.includes('Europe/Moscow')) {
+                    priceEl.textContent = '249₽';
+                    return;
+                }
+                
+                // Try IP detection
+                const response = await fetch('https://ipapi.co/json/', { timeout: 3000 });
                 const data = await response.json();
                 const country = data.country_code;
-                const priceEl = document.getElementById('lifetimePrice');
                 
                 // EU countries
                 const euCountries = ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'];
@@ -343,8 +355,16 @@
                 }
             } catch (error) {
                 console.error('Failed to detect region:', error);
-                // Default to USD if detection fails
-                document.getElementById('lifetimePrice').textContent = '$2.49';
+                
+                // Fallback: check browser language again
+                const browserLang = navigator.language || navigator.userLanguage;
+                if (browserLang.startsWith('ru')) {
+                    priceEl.textContent = '249₽';
+                } else if (browserLang.startsWith('de') || browserLang.startsWith('fr') || browserLang.startsWith('es') || browserLang.startsWith('it')) {
+                    priceEl.textContent = '2.49€';
+                } else {
+                    priceEl.textContent = '$2.49';
+                }
             }
         }
         
