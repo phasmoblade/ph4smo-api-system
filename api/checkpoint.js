@@ -1,7 +1,7 @@
 // api/checkpoint.js
 // Multi-checkpoint system: 12h = 1 checkpoint, 24h = 2 checkpoints
 // GET /api/checkpoint?type=12h|24h - Start checkpoint flow
-// Uses work.ink for monetization
+// Uses work.ink for monetization + hCaptcha protection
 
 import {
     createCheckpointToken,
@@ -62,9 +62,23 @@ h1{font-size:2rem;margin-bottom:16px}p{color:#999;line-height:1.6}</style></head
     try {
         const referer = req.headers.referer || req.headers.referrer || '';
         const isFromWorkInk = referer.includes('work.ink');
+        const isFromOurSite = referer.includes('ph4smoapi.vercel.app') || referer.includes('localhost');
 
         // ── Starting new checkpoint flow ──
         if (!isFromWorkInk) {
+            // Check if request comes from our get-key page (hCaptcha passed)
+            if (!isFromOurSite) {
+                res.writeHead(403, { 'Content-Type': 'text/html', ...CORS });
+                res.end(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Access Denied - ph4smo.club</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;background:#000;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:40px;text-align:center;max-width:400px}
+h1{font-size:2rem;margin-bottom:16px}p{color:#999;line-height:1.6;margin-bottom:16px}a{color:#fff;text-decoration:none}</style></head>
+<body><div class="card"><h1>ph4smo.club</h1>
+<p>Direct access not allowed.</p>
+<p><a href="/get-key">← Go to key generation page</a></p></div></body></html>`);
+                return;
+            }
+
             const tokenKey = `pending:${ip}`;
             const existingSession = await getCheckpointToken(tokenKey);
 

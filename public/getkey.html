@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Get Key — ph4smo.club</title>
+    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -57,6 +58,86 @@
             text-align: center;
         }
         
+        .premium-banner {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 30px;
+            backdrop-filter: blur(20px);
+        }
+        
+        .premium-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+        
+        .premium-text {
+            color: #999;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .premium-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        
+        .premium-btn {
+            display: inline-block;
+            background: #fff;
+            border: none;
+            border-radius: 12px;
+            color: #000;
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.05em;
+            text-decoration: none;
+        }
+        
+        .premium-btn:hover {
+            background: #e5e5e5;
+            transform: translateY(-2px);
+        }
+        
+        .divider {
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .divider-text {
+            position: relative;
+            display: inline-block;
+            background: #000;
+            padding: 0 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
         .card {
             background: rgba(255,255,255,0.02);
             border: 1px solid rgba(255,255,255,0.05);
@@ -98,28 +179,6 @@
             padding: 24px;
             margin-bottom: 24px;
             text-align: center;
-        }
-        
-        .captcha-question {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-        
-        input[type="text"] {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            color: #fff;
-            font-size: 1rem;
-            text-align: center;
-            margin-bottom: 12px;
-        }
-        
-        input[type="text"]::placeholder {
-            color: #666;
         }
         
         .btn {
@@ -197,8 +256,9 @@
         .back-link a:hover { color: #fff; }
         
         @media (max-width: 768px) {
-            .card { padding: 30px 20px; }
+            .card, .premium-banner { padding: 30px 20px; }
             .logo { font-size: 1.5rem; }
+            .premium-price { font-size: 1.5rem; }
         }
     </style>
 </head>
@@ -208,19 +268,36 @@
     
     <div class="logo">ph4smo.club</div>
 
+    <!-- Premium Lifetime Offer -->
+    <div class="premium-banner">
+        <div class="premium-title">💎 Want Lifetime Access?</div>
+        <p class="premium-text">
+            Get a permanent key with no expiration!<br>
+            One-time payment, lifetime access to all features.
+        </p>
+        <div class="premium-price">249₽</div>
+        <a href="https://funpay.com/users/11300933/" target="_blank" class="premium-btn">
+            Buy Lifetime Key on FunPay →
+        </a>
+    </div>
+
+    <!-- Divider -->
+    <div class="divider">
+        <span class="divider-text">or get a free 24h key</span>
+    </div>
+
     <div class="card">
-        <div class="card-title">🔑 Get Your Key</div>
-        <div class="card-desc">Complete verification to receive your key. Keys are bound to your device.</div>
+        <div class="card-title">🔑 Get Free 24h Key</div>
+        <div class="card-desc">Complete captcha verification to receive your free 24-hour access key. Keys are bound to your device (HWID).</div>
 
         <div class="error-box" id="errorBox"></div>
 
-        <!-- Step 1: CAPTCHA -->
+        <!-- Step 1: hCAPTCHA -->
         <div id="step1">
             <div class="captcha-box">
-                <div class="captcha-question" id="captchaQuestion">Loading...</div>
-                <input type="text" id="captchaAnswer" placeholder="Enter answer" maxlength="4">
-                <button class="btn" id="verifyBtn">Verify</button>
+                <div class="h-captcha" data-sitekey="10000000-ffff-ffff-ffff-000000000001" data-callback="onCaptchaSuccess"></div>
             </div>
+            <button class="btn" id="verifyBtn" disabled>Complete Captcha First</button>
         </div>
 
         <!-- Step 2: Key Options -->
@@ -257,7 +334,7 @@
             cursorDot.style.top = e.clientY + 'px';
         });
         
-        document.querySelectorAll('.option-btn, .btn').forEach(el => {
+        document.querySelectorAll('.option-btn, .btn, .premium-btn').forEach(el => {
             el.addEventListener('mouseenter', () => {
                 cursor.style.transform = 'translate(-50%, -50%) scale(1.5)';
             });
@@ -266,10 +343,10 @@
             });
         });
         
-        // Anti-DDoS: Rate limiting
+        // Anti-DDoS: Enhanced rate limiting
         const RATE_LIMIT_KEY = 'ph4smo_rate_limit';
-        const MAX_ATTEMPTS = 5;
-        const RATE_LIMIT_WINDOW = 60000;
+        const MAX_ATTEMPTS = 3; // Reduced from 5
+        const RATE_LIMIT_WINDOW = 300000; // 5 minutes instead of 1
         
         function checkRateLimit() {
             const now = Date.now();
@@ -281,8 +358,8 @@
             }
             
             if (data.attempts >= MAX_ATTEMPTS) {
-                const timeLeft = Math.ceil((RATE_LIMIT_WINDOW - (now - data.timestamp)) / 1000);
-                showError(`Too many attempts! Wait ${timeLeft}s`);
+                const timeLeft = Math.ceil((RATE_LIMIT_WINDOW - (now - data.timestamp)) / 1000 / 60);
+                showError(`Too many attempts! Wait ${timeLeft} minute${timeLeft !== 1 ? 's' : ''}`);
                 return false;
             }
             
@@ -291,37 +368,60 @@
             return true;
         }
         
-        // Anti-DevTools
+        // Detect automation/bots
+        let mouseMovements = 0;
+        let keyPresses = 0;
+        let humanScore = 0;
+        
+        document.addEventListener('mousemove', () => {
+            mouseMovements++;
+            humanScore += 0.1;
+        });
+        
+        document.addEventListener('keydown', () => {
+            keyPresses++;
+            humanScore += 0.2;
+        });
+        
+        // Check if user behaves like human
+        function isHumanLike() {
+            return humanScore > 5 && mouseMovements > 10;
+        }
+        
+        // Anti-DevTools (enhanced)
         (function() {
+            // Disable right-click
             document.addEventListener('contextmenu', e => e.preventDefault());
+            
+            // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
             document.addEventListener('keydown', e => {
                 if (e.key === 'F12' || 
-                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
-                    (e.ctrlKey && e.key === 'U')) {
+                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+                    (e.ctrlKey && e.key === 'U') ||
+                    (e.ctrlKey && e.shiftKey && e.key === 'K')) {
                     e.preventDefault();
+                    showError('Developer tools are disabled for security.');
                 }
             });
+            
+            // Detect DevTools opening
+            let devtools = {open: false, orientation: null};
+            const threshold = 160;
+            
+            setInterval(() => {
+                if (window.outerHeight - window.innerHeight > threshold || 
+                    window.outerWidth - window.innerWidth > threshold) {
+                    if (!devtools.open) {
+                        devtools.open = true;
+                        document.body.innerHTML = '<div style="background:#000;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;"><div><h1>Access Denied</h1><p>Developer tools detected. Please close them and refresh the page.</p></div></div>';
+                    }
+                }
+            }, 500);
+            
+            // Disable text selection
+            document.onselectstart = () => false;
+            document.ondragstart = () => false;
         })();
-        
-        // Math CAPTCHA
-        let captchaAnswer = 0;
-        
-        function generateCaptcha() {
-            const num1 = Math.floor(Math.random() * 20) + 1;
-            const num2 = Math.floor(Math.random() * 20) + 1;
-            const operations = ['+', '-', '*'];
-            const operation = operations[Math.floor(Math.random() * operations.length)];
-            
-            let question = `${num1} ${operation} ${num2} = ?`;
-            
-            switch(operation) {
-                case '+': captchaAnswer = num1 + num2; break;
-                case '-': captchaAnswer = num1 - num2; break;
-                case '*': captchaAnswer = num1 * num2; break;
-            }
-            
-            document.getElementById('captchaQuestion').textContent = question;
-        }
         
         // Show error
         function showError(msg) {
@@ -331,32 +431,50 @@
             setTimeout(() => box.style.display = 'none', 5000);
         }
         
-        // Verify CAPTCHA
+        // hCaptcha callback
+        function onCaptchaSuccess(token) {
+            document.getElementById('verifyBtn').disabled = false;
+            document.getElementById('verifyBtn').textContent = 'Get Free 24h Key';
+        }
+        
+        // Verify hCAPTCHA and enable key buttons
         document.getElementById('verifyBtn').addEventListener('click', function() {
             if (!checkRateLimit()) return;
             
-            const userAnswer = parseInt(document.getElementById('captchaAnswer').value);
+            const captchaResponse = hcaptcha.getResponse();
             
-            if (userAnswer === captchaAnswer) {
+            if (captchaResponse) {
                 document.getElementById('step1').style.display = 'none';
                 document.getElementById('step2').style.display = 'block';
                 
-                // Countdown
+                // Countdown before allowing clicks
                 let countdown = 3;
                 const timerEl = document.getElementById('timer');
+                const keyButtons = document.querySelectorAll('#key12h, #key24h');
+                
+                // Disable buttons initially
+                keyButtons.forEach(btn => {
+                    btn.style.pointerEvents = 'none';
+                    btn.style.opacity = '0.5';
+                });
+                
                 const interval = setInterval(() => {
                     timerEl.textContent = `Wait ${countdown}s before selecting...`;
                     countdown--;
                     
                     if (countdown < 0) {
                         clearInterval(interval);
-                        timerEl.textContent = '';
+                        timerEl.textContent = 'Choose your key type:';
+                        
+                        // Enable buttons after countdown
+                        keyButtons.forEach(btn => {
+                            btn.style.pointerEvents = 'auto';
+                            btn.style.opacity = '1';
+                        });
                     }
                 }, 1000);
             } else {
-                showError('Wrong answer! Try again.');
-                generateCaptcha();
-                document.getElementById('captchaAnswer').value = '';
+                showError('Please complete the captcha first!');
             }
         });
         
@@ -372,11 +490,6 @@
             };
             showError(msgs[error] || 'Something went wrong.');
         }
-        
-        // Initialize
-        window.onload = function() {
-            generateCaptcha();
-        };
     </script>
 </body>
 </html>

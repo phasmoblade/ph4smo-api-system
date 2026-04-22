@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Key Received — ph4smo API</title>
+    <title>Key Received — ph4smo.club</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #0a0a0a;
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
             color: #fff;
             min-height: 100vh;
             display: flex;
@@ -16,72 +16,182 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            cursor: none;
         }
-        .logo { font-size: 2rem; font-weight: 800; letter-spacing: -0.05em; margin-bottom: 40px; }
-        .logo span { color: #a855f7; }
-        .card {
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 16px;
-            padding: 40px;
-            max-width: 480px;
-            width: 100%;
+        
+        * { cursor: none !important; }
+        
+        @media (max-width: 768px) {
+            body, * { cursor: auto !important; }
+            .cursor, .cursor-dot { display: none; }
+        }
+        
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,.4);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.15s ease;
+            transform: translate(-50%, -50%);
+        }
+        
+        .cursor-dot {
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+        
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            margin-bottom: 40px;
             text-align: center;
         }
-        .success-icon { font-size: 3rem; margin-bottom: 16px; }
-        .card-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
-        .card-desc { color: #666; font-size: 0.9rem; margin-bottom: 28px; line-height: 1.5; }
+        
+        .card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            backdrop-filter: blur(20px);
+        }
+        
+        .error-card { 
+            border-color: rgba(239,68,68,0.3);
+            background: rgba(239,68,68,0.05);
+        }
+        
+        .success-icon { 
+            font-size: 3rem; 
+            margin-bottom: 16px; 
+        }
+        
+        .error-icon { 
+            color: #ef4444; 
+        }
+        
+        .card-title { 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            margin-bottom: 8px; 
+        }
+        
+        .card-desc { 
+            color: #666; 
+            font-size: 0.9rem; 
+            margin-bottom: 28px; 
+            line-height: 1.5; 
+        }
+        
         .key-box {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 10px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
             padding: 16px 20px;
             font-family: 'Courier New', monospace;
             font-size: 1.1rem;
             letter-spacing: 0.1em;
-            color: #a855f7;
+            color: #fff;
             margin-bottom: 16px;
             word-break: break-all;
             cursor: pointer;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
         }
-        .key-box:hover { border-color: #a855f7; }
-        .copy-hint { color: #555; font-size: 0.8rem; margin-bottom: 28px; }
-        .copy-hint.copied { color: #22c55e; }
+        
+        .key-box:hover { 
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .copy-hint { 
+            color: #666; 
+            font-size: 0.8rem; 
+            margin-bottom: 28px; 
+        }
+        
+        .copy-hint.copied { 
+            color: #22c55e; 
+        }
+        
         .info-box {
-            background: #0f0f0f;
-            border: 1px solid #1a1a1a;
-            border-radius: 10px;
-            padding: 16px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 20px;
             text-align: left;
             margin-bottom: 24px;
         }
-        .info-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.85rem; }
-        .info-label { color: #666; }
-        .info-value { color: #ccc; font-weight: 600; }
-        .info-value.green { color: #22c55e; }
+        
+        .info-row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 6px 0; 
+            font-size: 0.9rem; 
+        }
+        
+        .info-label { 
+            color: #666; 
+        }
+        
+        .info-value { 
+            color: #fff; 
+            font-weight: 600; 
+        }
+        
+        .info-value.green { 
+            color: #22c55e; 
+        }
+        
         .btn {
             display: block;
-            background: #a855f7;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
             color: #fff;
-            border: none;
-            border-radius: 10px;
-            padding: 12px 24px;
-            font-size: 0.9rem;
+            padding: 16px 24px;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
-            transition: background 0.2s;
+            transition: all 0.2s;
             width: 100%;
         }
-        .btn:hover { background: #9333ea; }
-        .warning { color: #f59e0b; font-size: 0.8rem; margin-top: 16px; }
-        .error-card { border-color: #ef4444; }
-        .error-icon { color: #ef4444; }
+        
+        .btn:hover { 
+            background: rgba(255,255,255,0.12);
+            border-color: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .warning { 
+            color: #f59e0b; 
+            font-size: 0.8rem; 
+            margin-top: 16px; 
+        }
+        
+        @media (max-width: 768px) {
+            .card { padding: 30px 20px; }
+            .logo { font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body>
-    <div class="logo">ph4smo<span>api</span></div>
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
+    
+    <div class="logo">ph4smo.club</div>
 
     <div class="card" id="mainCard">
         <div class="success-icon" id="icon">🎉</div>
@@ -106,11 +216,31 @@
             </div>
         </div>
 
-        <a href="https://ph4smo.vercel.app" class="btn" target="_blank">Go to ph4smo.club →</a>
+        <a href="https://ph4smo.vercel.app" class="btn" target="_blank">← Back to ph4smo.club</a>
         <p class="warning" id="warning">⚠️ Save your key! It won't be shown again.</p>
     </div>
 
     <script>
+        // Custom cursor
+        const cursor = document.querySelector('.cursor');
+        const cursorDot = document.querySelector('.cursor-dot');
+        
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            cursorDot.style.left = e.clientX + 'px';
+            cursorDot.style.top = e.clientY + 'px';
+        });
+        
+        document.querySelectorAll('.btn, .key-box').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.style.transform = 'translate(-50%, -50%) scale(1.5)';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+            });
+        });
+        
         const params = new URLSearchParams(window.location.search);
         const success = params.get('success');
         const key     = params.get('key');
