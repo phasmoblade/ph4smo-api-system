@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Get Key — ph4smo.club</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #000;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #050505;
             color: #fff;
             min-height: 100vh;
             display: flex;
@@ -18,284 +21,389 @@
             justify-content: center;
             padding: 20px;
             cursor: none;
+            overflow-x: hidden;
         }
-        
+
         * { cursor: none !important; }
-        
+
         @media (max-width: 768px) {
             body, * { cursor: auto !important; }
-            .cursor, .cursor-dot { display: none; }
+            .cursor, .cursor-dot { display: none !important; }
         }
-        
+
         .cursor {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255,255,255,.4);
+            width: 24px;
+            height: 24px;
+            border: 1.5px solid rgba(255,255,255,0.3);
             border-radius: 50%;
             position: fixed;
             pointer-events: none;
             z-index: 9999;
-            transition: transform 0.15s ease;
+            transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.3s;
             transform: translate(-50%, -50%);
+            backdrop-filter: blur(2px);
         }
-        
+
         .cursor-dot {
-            width: 4px;
-            height: 4px;
+            width: 5px;
+            height: 5px;
             background: #fff;
             border-radius: 50%;
             position: fixed;
             pointer-events: none;
             z-index: 9999;
             transform: translate(-50%, -50%);
+            box-shadow: 0 0 6px rgba(255,255,255,0.4);
         }
-        
+
+        /* BACKGROUND ORBS */
+        .bg-orbs {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.07;
+            animation: orbFloat 20s ease-in-out infinite;
+        }
+        .bg-orb:nth-child(1) {
+            width: 500px; height: 500px;
+            background: #fff;
+            top: -10%; left: -10%;
+        }
+        .bg-orb:nth-child(2) {
+            width: 400px; height: 400px;
+            background: #ccc;
+            bottom: -10%; right: -10%;
+            animation-delay: -7s;
+        }
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(60px, -40px) scale(1.1); }
+            50% { transform: translate(-30px, 50px) scale(0.95); }
+            75% { transform: translate(40px, 20px) scale(1.05); }
+        }
+
+        /* NOISE */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.015;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-repeat: repeat;
+            background-size: 128px 128px;
+        }
+
+        .page-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
         .logo {
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: -0.05em;
-            margin-bottom: 40px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            margin-bottom: 32px;
             text-align: center;
+            text-shadow: 0 0 60px rgba(255,255,255,0.1);
         }
-        
+
         .premium-banner {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 500px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top-color: rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 480px;
             width: 100%;
             text-align: center;
-            margin-bottom: 30px;
-            backdrop-filter: blur(20px);
+            margin-bottom: 24px;
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
-        
+
         .premium-title {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 700;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             color: #fff;
         }
-        
+
         .premium-text {
-            color: #999;
-            font-size: 0.9rem;
+            color: rgba(255,255,255,0.4);
+            font-size: 0.85rem;
             margin-bottom: 20px;
-            line-height: 1.5;
+            line-height: 1.6;
         }
-        
+
         .premium-price {
             font-size: 2rem;
-            font-weight: 700;
+            font-weight: 800;
             color: #fff;
             margin-bottom: 20px;
+            letter-spacing: -0.02em;
         }
-        
+
         .premium-btn {
             display: inline-block;
-            background: #fff;
-            border: none;
-            border-radius: 12px;
-            color: #000;
-            padding: 16px 32px;
-            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-top-color: rgba(255, 255, 255, 0.25);
+            border-radius: 14px;
+            color: #fff;
+            padding: 14px 32px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
-            letter-spacing: 0.05em;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            letter-spacing: 0.03em;
             text-decoration: none;
+            box-shadow:
+                0 4px 12px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
-        
+
         .premium-btn:hover {
-            background: #e5e5e5;
-            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.16);
+            transform: translateY(-1px);
+            box-shadow:
+                0 8px 24px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
-        
+
         .divider {
-            max-width: 500px;
+            max-width: 480px;
             width: 100%;
             text-align: center;
-            margin: 20px 0;
+            margin: 16px 0;
             position: relative;
         }
-        
+
         .divider::before {
             content: '';
             position: absolute;
             top: 50%;
-            left: 0;
-            right: 0;
+            left: 0; right: 0;
             height: 1px;
-            background: rgba(255,255,255,0.1);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
         }
-        
+
         .divider-text {
             position: relative;
             display: inline-block;
-            background: #000;
+            background: #050505;
             padding: 0 20px;
-            color: #666;
-            font-size: 0.9rem;
+            color: rgba(255,255,255,0.25);
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
         }
-        
+
         .card {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 500px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top-color: rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 36px;
+            max-width: 480px;
             width: 100%;
-            backdrop-filter: blur(20px);
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
-        
+
         .card-title {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 700;
             margin-bottom: 8px;
+            letter-spacing: -0.01em;
         }
-        
+
         .card-desc {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 32px;
-            line-height: 1.5;
+            color: rgba(255,255,255,0.35);
+            font-size: 0.85rem;
+            margin-bottom: 28px;
+            line-height: 1.6;
         }
-        
+
         .error-box {
-            background: rgba(239,68,68,0.1);
-            border: 1px solid rgba(239,68,68,0.3);
-            border-radius: 12px;
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 14px;
             padding: 12px 16px;
             color: #ef4444;
             font-size: 0.85rem;
             margin-bottom: 24px;
             display: none;
+            backdrop-filter: blur(10px);
         }
-        
+
         .captcha-box {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.06);
             border-radius: 16px;
             padding: 24px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100px;
             overflow: hidden;
         }
-        
+
         .captcha-box > div {
             max-width: 100%;
         }
-        
+
         @media (max-width: 768px) {
-            .captcha-box {
-                padding: 12px;
-            }
-            
-            /* Make hCaptcha responsive */
+            .captcha-box { padding: 12px; }
             .h-captcha {
                 transform: scale(0.9);
                 transform-origin: center;
             }
         }
-        
+
         @media (max-width: 400px) {
-            .captcha-box {
-                padding: 8px;
-            }
-            
-            .h-captcha {
-                transform: scale(0.8);
-            }
+            .captcha-box { padding: 8px; }
+            .h-captcha { transform: scale(0.8); }
         }
-        
+
         .btn {
             width: 100%;
-            padding: 16px;
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-top-color: rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
             color: #fff;
-            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow:
+                0 4px 12px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
-        
+
         .btn:hover:not(:disabled) {
-            background: rgba(255,255,255,0.12);
-            border-color: rgba(255,255,255,0.2);
-            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.14);
+            transform: translateY(-1px);
+            box-shadow:
+                0 8px 24px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
-        
+
         .btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
         }
-        
+
         .options {
             display: grid;
-            gap: 16px;
-            margin-top: 24px;
+            gap: 12px;
+            margin-top: 20px;
         }
-        
+
         .option-btn {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.025);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-top-color: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
             padding: 24px;
             cursor: pointer;
             text-align: center;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
             text-decoration: none;
             color: #fff;
             display: block;
+            box-shadow:
+                0 4px 16px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04);
         }
-        
+
         .option-btn:hover {
-            border-color: rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255,255,255,0.12);
             transform: translateY(-2px);
+            box-shadow:
+                0 8px 24px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
         }
-        
-        .option-icon { font-size: 2rem; margin-bottom: 12px; }
-        .option-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 4px; }
-        .option-desc { color: #666; font-size: 0.85rem; }
-        
+
+        .option-icon { font-size: 1.8rem; margin-bottom: 10px; }
+        .option-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 4px; }
+        .option-desc { color: rgba(255,255,255,0.3); font-size: 0.8rem; }
+
         .timer {
             text-align: center;
-            color: #666;
-            font-size: 0.85rem;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8rem;
             margin-top: 12px;
         }
-        
+
         .back-link {
-            margin-top: 24px;
+            margin-top: 20px;
             text-align: center;
         }
-        
+
         .back-link a {
-            color: #666;
+            color: rgba(255,255,255,0.3);
             text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.2s;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 8px 20px;
+            border-radius: 100px;
+            border: 1px solid rgba(255,255,255,0.06);
+            display: inline-block;
         }
-        
-        .back-link a:hover { color: #fff; }
-        
+
+        .back-link a:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.12);
+        }
+
         @media (max-width: 768px) {
-            .card, .premium-banner { padding: 30px 20px; }
-            .logo { font-size: 1.5rem; }
+            .card, .premium-banner { padding: 28px 20px; }
+            .logo { font-size: 1.4rem; }
             .premium-price { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
+    <div class="bg-orbs">
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+    </div>
+
     <div class="cursor"></div>
     <div class="cursor-dot"></div>
-    
+
+    <div class="page-content">
     <div class="logo">ph4smo.club</div>
 
     <div class="card">
@@ -350,6 +458,7 @@
         <a href="https://funpay.com/users/11300933/" target="_blank" class="premium-btn">
             Buy on FunPay →
         </a>
+    </div>
     </div>
 
     <script>
@@ -412,12 +521,14 @@
             cursorDot.style.top = e.clientY + 'px';
         });
         
-        document.querySelectorAll('.option-btn, .btn, .premium-btn').forEach(el => {
+        document.querySelectorAll('.option-btn, .btn, .premium-btn, a').forEach(el => {
             el.addEventListener('mouseenter', () => {
-                cursor.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                cursor.style.transform = 'translate(-50%, -50%) scale(1.6)';
+                cursor.style.borderColor = 'rgba(255,255,255,0.6)';
             });
             el.addEventListener('mouseleave', () => {
                 cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+                cursor.style.borderColor = 'rgba(255,255,255,0.3)';
             });
         });
         
