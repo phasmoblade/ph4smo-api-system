@@ -262,7 +262,7 @@
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255,255,255,0.06);
             border-radius: 16px;
-            padding: 24px;
+            padding: 20px;
             margin-bottom: 20px;
             display: flex;
             justify-content: center;
@@ -271,21 +271,30 @@
             overflow: hidden;
         }
 
+        .h-captcha {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
         .captcha-box > div {
             max-width: 100%;
         }
 
         @media (max-width: 768px) {
-            .captcha-box { padding: 12px; }
+            .captcha-box { padding: 10px; }
             .h-captcha {
-                transform: scale(0.9);
-                transform-origin: center;
+                transform: scale(0.85);
+                transform-origin: center center;
             }
         }
 
         @media (max-width: 400px) {
-            .captcha-box { padding: 8px; }
-            .h-captcha { transform: scale(0.8); }
+            .captcha-box { padding: 6px; }
+            .h-captcha {
+                transform: scale(0.75);
+                transform-origin: center center;
+            }
         }
 
         .btn {
