@@ -17,6 +17,30 @@
             overflow-x: hidden;
         }
 
+        /* CUSTOM SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Firefox scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.15) rgba(255, 255, 255, 0.02);
+        }
+
         body::after {
             content: '';
             position: fixed;
@@ -352,9 +376,10 @@
         <!-- All Keys Tab -->
         <div id="keys" class="tab-content">
             <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
                     <div class="card-title" style="margin-bottom: 0;">All Keys</div>
-                    <div style="display: flex; gap: 8px;">
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <input type="text" id="searchInput" placeholder="Search keys, HWID..." oninput="searchKeys()" style="width: 200px; padding: 8px 14px; font-size: 0.85rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: #fff; font-family: 'Inter', sans-serif;">
                         <select id="timeFilter" onchange="loadAllKeys()" style="width: auto; padding: 8px 12px; font-size: 0.85rem;">
                             <option value="all">All Time</option>
                             <option value="day">Last 24 Hours</option>
@@ -564,8 +589,12 @@
                 
                 if (!data.keys || data.keys.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">No keys yet</td></tr>';
+                    allKeysData = [];
                     return;
                 }
+
+                // Store for search
+                allKeysData = data.keys;
 
                 const now = Date.now();
                 const timeFilter = document.getElementById('timeFilter').value;
@@ -601,35 +630,10 @@
                     });
                 }
 
-                if (filteredKeys.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">No keys match filters</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = filteredKeys.map(k => {
-                    const status = k.banned ? 'banned' : (k.expires && k.expires < now ? 'expired' : 'active');
-                    const badgeClass = status === 'active' ? 'badge-active' : (status === 'banned' ? 'badge-banned' : 'badge-expired');
-                    const expiresText = k.expires ? new Date(k.expires).toLocaleString() : 'Never';
-                    const createdText = k.createdAt ? new Date(k.createdAt).toLocaleString() : 'Unknown';
-                    const premiumBadge = k.premium ? '<span class="badge badge-premium" style="margin-left: 4px;">💎</span>' : '';
-                    
-                    return `
-                        <tr>
-                            <td><span class="key-code">${k.key}</span></td>
-                            <td>${k.type}${premiumBadge}</td>
-                            <td style="color: #666; font-size: 0.85rem;">${k.hwid || 'Not used'}</td>
-                            <td><span class="badge ${badgeClass}">${status}</span></td>
-                            <td style="color: #666; font-size: 0.85rem;">${createdText}</td>
-                            <td style="color: #666; font-size: 0.85rem;">${expiresText}</td>
-                            <td>
-                                <div class="action-btns">
-                                    ${!k.banned ? `<button class="btn btn-danger" onclick="banKey('${k.key}')">Ban</button>` : `<button class="btn btn-secondary" onclick="unbanKey('${k.key}')">Unban</button>`}
-                                    <button class="btn btn-danger" onclick="deleteKey('${k.key}')">Delete</button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
+                // Clear search when applying filters
+                document.getElementById('searchInput').value = '';
+                
+                renderKeys(filteredKeys);
             } catch (err) {
                 console.error('Failed to load keys:', err);
             }
@@ -670,6 +674,70 @@
         document.getElementById('passwordInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') login();
         });
+
+        // Search functionality
+        let allKeysData = [];
+
+        async function searchKeys() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const tbody = document.getElementById('allKeysBody');
+            
+            if (!allKeysData.length) {
+                // Load keys if not loaded
+                const res = await fetch('/api/admin?action=list&secret=' + encodeURIComponent(adminSecret));
+                const data = await res.json();
+                allKeysData = data.keys || [];
+            }
+            
+            if (!query) {
+                loadAllKeys();
+                return;
+            }
+            
+            const filtered = allKeysData.filter(k => {
+                const keyMatch = k.key.toLowerCase().includes(query);
+                const hwidMatch = k.hwid && k.hwid.toLowerCase().includes(query);
+                const typeMatch = k.type && k.type.toLowerCase().includes(query);
+                return keyMatch || hwidMatch || typeMatch;
+            });
+            
+            renderKeys(filtered);
+        }
+
+        function renderKeys(keys) {
+            const tbody = document.getElementById('allKeysBody');
+            const now = Date.now();
+            
+            if (!keys || keys.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">No keys found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = keys.map(k => {
+                const status = k.banned ? 'banned' : (k.expires && k.expires < now ? 'expired' : 'active');
+                const badgeClass = status === 'active' ? 'badge-active' : (status === 'banned' ? 'badge-banned' : 'badge-expired');
+                const expiresText = k.expires ? new Date(k.expires).toLocaleString() : 'Never';
+                const createdText = k.createdAt ? new Date(k.createdAt).toLocaleString() : 'Unknown';
+                const premiumBadge = k.premium ? '<span class="badge badge-premium" style="margin-left: 4px;">💎</span>' : '';
+                
+                return `
+                    <tr>
+                        <td><span class="key-code">${k.key}</span></td>
+                        <td>${k.type}${premiumBadge}</td>
+                        <td style="color: #666; font-size: 0.85rem;">${k.hwid || 'Not used'}</td>
+                        <td><span class="badge ${badgeClass}">${status}</span></td>
+                        <td style="color: #666; font-size: 0.85rem;">${createdText}</td>
+                        <td style="color: #666; font-size: 0.85rem;">${expiresText}</td>
+                        <td>
+                            <div class="action-btns">
+                                ${!k.banned ? `<button class="btn btn-danger" onclick="banKey('${k.key}')">Ban</button>` : `<button class="btn btn-secondary" onclick="unbanKey('${k.key}')">Unban</button>`}
+                                <button class="btn btn-danger" onclick="deleteKey('${k.key}')">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
     </script>
 </body>
 </html>
