@@ -121,6 +121,7 @@ export default async function handler(req, res) {
             expiresIn: expiresIn,
             lifetime:  data.expires === null,
             premium:   data.premium || false,
+            username:  data.username || null,
         })));
 
     } catch (err) {

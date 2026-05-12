@@ -210,11 +210,15 @@
         .divider-text {
             position: relative;
             display: inline-block;
-            background: #050505;
-            padding: 0 20px;
-            color: rgba(255,255,255,0.25);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 8px 20px;
+            color: rgba(255,255,255,0.4);
             font-size: 0.8rem;
             letter-spacing: 0.05em;
+            border-radius: 100px;
+            border: 1px solid rgba(255,255,255,0.06);
         }
 
         .card {
@@ -475,45 +479,153 @@
         async function detectRegionAndSetPrice() {
             const priceEl = document.getElementById('lifetimePrice');
             
+            // Price configuration by region
+            const prices = {
+                RU: { amount: '249₽', currency: 'RUB' },
+                US: { amount: '$2.49', currency: 'USD' },
+                CA: { amount: '$2.49', currency: 'USD' },
+                AU: { amount: '$2.49', currency: 'USD' },
+                GB: { amount: '£1.99', currency: 'GBP' },
+                UK: { amount: '£1.99', currency: 'GBP' },
+                // EU countries
+                AT: { amount: '2.49€', currency: 'EUR' },
+                BE: { amount: '2.49€', currency: 'EUR' },
+                BG: { amount: '2.49€', currency: 'EUR' },
+                HR: { amount: '2.49€', currency: 'EUR' },
+                CY: { amount: '2.49€', currency: 'EUR' },
+                CZ: { amount: '2.49€', currency: 'EUR' },
+                DK: { amount: '2.49€', currency: 'EUR' },
+                EE: { amount: '2.49€', currency: 'EUR' },
+                FI: { amount: '2.49€', currency: 'EUR' },
+                FR: { amount: '2.49€', currency: 'EUR' },
+                DE: { amount: '2.49€', currency: 'EUR' },
+                GR: { amount: '2.49€', currency: 'EUR' },
+                HU: { amount: '2.49€', currency: 'EUR' },
+                IE: { amount: '2.49€', currency: 'EUR' },
+                IT: { amount: '2.49€', currency: 'EUR' },
+                LV: { amount: '2.49€', currency: 'EUR' },
+                LT: { amount: '2.49€', currency: 'EUR' },
+                LU: { amount: '2.49€', currency: 'EUR' },
+                MT: { amount: '2.49€', currency: 'EUR' },
+                NL: { amount: '2.49€', currency: 'EUR' },
+                PL: { amount: '2.49€', currency: 'EUR' },
+                PT: { amount: '2.49€', currency: 'EUR' },
+                RO: { amount: '2.49€', currency: 'EUR' },
+                SK: { amount: '2.49€', currency: 'EUR' },
+                SI: { amount: '2.49€', currency: 'EUR' },
+                ES: { amount: '2.49€', currency: 'EUR' },
+                SE: { amount: '2.49€', currency: 'EUR' },
+                // CIS countries
+                BY: { amount: '249₽', currency: 'RUB' },
+                KZ: { amount: '249₽', currency: 'RUB' },
+                UA: { amount: '99₴', currency: 'UAH' },
+                // Asia
+                JP: { amount: '¥370', currency: 'JPY' },
+                CN: { amount: '¥18', currency: 'CNY' },
+                KR: { amount: '₩3,300', currency: 'KRW' },
+                IN: { amount: '₹210', currency: 'INR' },
+                // Default
+                DEFAULT: { amount: '$2.49', currency: 'USD' }
+            };
+            
             try {
-                // Check browser language first
-                const browserLang = navigator.language || navigator.userLanguage;
-                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                // Try IP-based detection first (most accurate)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
                 
-                // If browser language is Russian or timezone is in Russia
-                if (browserLang.startsWith('ru') || timezone.includes('Moscow') || timezone.includes('Europe/Moscow')) {
-                    priceEl.textContent = '249₽';
-                    return;
-                }
+                const response = await fetch('https://ipapi.co/json/', { 
+                    signal: controller.signal 
+                });
+                clearTimeout(timeoutId);
                 
-                // Try IP detection
-                const response = await fetch('https://ipapi.co/json/', { timeout: 3000 });
                 const data = await response.json();
                 const country = data.country_code;
                 
-                // EU countries
-                const euCountries = ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'];
-                
-                if (country === 'RU') {
-                    priceEl.textContent = '249₽';
-                } else if (euCountries.includes(country)) {
-                    priceEl.textContent = '2.49€';
-                } else {
-                    priceEl.textContent = '$2.49';
+                if (prices[country]) {
+                    priceEl.textContent = prices[country].amount;
+                    return;
                 }
             } catch (error) {
-                console.error('Failed to detect region:', error);
-                
-                // Fallback: check browser language again
-                const browserLang = navigator.language || navigator.userLanguage;
-                if (browserLang.startsWith('ru')) {
-                    priceEl.textContent = '249₽';
-                } else if (browserLang.startsWith('de') || browserLang.startsWith('fr') || browserLang.startsWith('es') || browserLang.startsWith('it')) {
-                    priceEl.textContent = '2.49€';
-                } else {
-                    priceEl.textContent = '$2.49';
-                }
+                console.log('IP detection failed, using fallback');
             }
+            
+            // Fallback: timezone and language detection
+            try {
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const browserLang = navigator.language || navigator.userLanguage || '';
+                
+                // Russia by timezone or language
+                if (timezone.includes('Moscow') || 
+                    timezone.includes('St_Petersburg') ||
+                    timezone.includes('Volgograd') ||
+                    timezone.includes('Samara') ||
+                    timezone.includes('Yekaterinburg') ||
+                    timezone.includes('Omsk') ||
+                    timezone.includes('Novosibirsk') ||
+                    timezone.includes('Krasnoyarsk') ||
+                    timezone.includes('Irkutsk') ||
+                    timezone.includes('Yakutsk') ||
+                    timezone.includes('Vladivostok') ||
+                    timezone.includes('Magadan') ||
+                    timezone.includes('Kamchatka') ||
+                    browserLang.toLowerCase().startsWith('ru')) {
+                    priceEl.textContent = prices.RU.amount;
+                    return;
+                }
+                
+                // Ukraine by timezone or language
+                if (timezone.includes('Kiev') || 
+                    timezone.includes('Kyiv') ||
+                    browserLang.toLowerCase().startsWith('uk')) {
+                    priceEl.textContent = prices.UA.amount;
+                    return;
+                }
+                
+                // Japan
+                if (timezone.includes('Tokyo') || browserLang.toLowerCase().startsWith('ja')) {
+                    priceEl.textContent = prices.JP.amount;
+                    return;
+                }
+                
+                // China
+                if (timezone.includes('Shanghai') || 
+                    timezone.includes('Beijing') ||
+                    timezone.includes('Chongqing') ||
+                    browserLang.toLowerCase().startsWith('zh')) {
+                    priceEl.textContent = prices.CN.amount;
+                    return;
+                }
+                
+                // India
+                if (timezone.includes('Kolkata') || 
+                    timezone.includes('Mumbai') ||
+                    timezone.includes('Delhi') ||
+                    browserLang.toLowerCase().startsWith('hi') ||
+                    browserLang.toLowerCase().startsWith('en-in')) {
+                    priceEl.textContent = prices.IN.amount;
+                    return;
+                }
+                
+                // EU by language
+                const euLangs = ['de', 'fr', 'es', 'it', 'pt', 'nl', 'pl', 'cs', 'sk', 'hu', 'ro', 'bg', 'hr', 'sl', 'et', 'lv', 'lt', 'mt', 'sv', 'da', 'fi', 'el'];
+                const langPrefix = browserLang.toLowerCase().split('-')[0];
+                if (euLangs.includes(langPrefix)) {
+                    priceEl.textContent = prices.DE.amount;
+                    return;
+                }
+                
+                // UK
+                if (browserLang.toLowerCase().startsWith('en-gb') || timezone.includes('London')) {
+                    priceEl.textContent = prices.GB.amount;
+                    return;
+                }
+                
+            } catch (e) {
+                console.log('Timezone detection failed');
+            }
+            
+            // Final fallback: default USD
+            priceEl.textContent = prices.DEFAULT.amount;
         }
         
         // Call on page load
